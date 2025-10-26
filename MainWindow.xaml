@@ -1,0 +1,206 @@
+﻿<Window x:Class="barcode_gen.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:barcode_gen"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Window.Resources>
+        <ControlTemplate x:Key="ButtonTemplate1" TargetType="{x:Type Button}">
+            <Border x:Name="border" 
+                    Background="LightBlue" 
+                    CornerRadius="6">
+                <ContentPresenter 
+                    ContentStringFormat="{TemplateBinding ContentStringFormat}" 
+                    ContentTemplate="{TemplateBinding ContentTemplate}" 
+                    Content="{TemplateBinding Content}" 
+                    HorizontalAlignment="Center" 
+                    Margin="{TemplateBinding Padding}"
+                    RecognizesAccessKey="True" 
+                    VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter TargetName="border" Property="Background" Value="LightSkyBlue"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter TargetName="border" Property="Background" Value="LightGray"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+      
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="8*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <!--#region Left -->
+
+        <Border Padding="5" Margin="10" 
+                Grid.Column="0"
+                Grid.Row="0"
+                CornerRadius="5" 
+                BorderBrush="LightBlue" 
+                BorderThickness="1">
+            <TextBox x:Name="TBData" BorderThickness="0"  AcceptsReturn="True"></TextBox>
+        </Border>
+        <Grid Grid.Column="0"
+              Grid.Row="1">
+            <Button Template="{DynamicResource ButtonTemplate1}"  
+                Margin="10"
+                Content="Создать последовательность"
+                Background="LightBlue" Click="Button_Click_1">
+            </Button>
+        </Grid>
+        <!--#endregion-->
+        <!--#region Right -->
+        <StackPanel Grid.Row="0" 
+              Grid.RowSpan="2"
+              Grid.Column="1"
+              VerticalAlignment="Top"
+              >
+            <!--#region first line -->
+            <Grid 
+                MinHeight="30"
+                Height="30"
+                  Margin="10"
+                        >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="2*"/>
+                </Grid.ColumnDefinitions>
+
+                <Button 
+                    Grid.Column="0"
+                    Background="LightBlue" 
+                    Template="{DynamicResource ButtonTemplate1}" Click="Button_Click">Сгенерировать файл</Button>
+
+            </Grid>
+            <!--#endregion-->
+            <!--#region second line -->
+
+            <Grid 
+                x:Name="GSizes"
+                Margin="10 0 0 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="2*"/>
+                </Grid.ColumnDefinitions>
+                <RadioButton Grid.Column="0" GroupName="Label" IsChecked="True">Малая</RadioButton>
+                <RadioButton Grid.Column="1" GroupName="Label">Большая</RadioButton>
+                <RadioButton Grid.Column="2" GroupName="Label">A4</RadioButton>
+            </Grid>
+            <!--#endregion-->
+            <!--#region third line -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <ComboBox x:Name="CBType" Margin="10 10 0 0">
+                    <ComboBoxItem IsSelected="True">Code 128</ComboBoxItem>
+                    <ComboBoxItem >EAN 13</ComboBoxItem>
+                </ComboBox>
+            </Grid>
+            <!--#endregion-->
+        </StackPanel>
+        <StackPanel 
+            Grid.Row="0"
+            Grid.RowSpan="2"
+            Grid.Column="1"
+            Margin="0 0 0 20"
+            VerticalAlignment="Bottom">
+            <!--#region first line -->
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Label>Преффикс</Label>
+                <Label Grid.Column="1">Суффикс</Label>
+            </Grid>
+            <Grid
+                Margin="0 -3 0 0"
+                >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="TBPrefix"
+                    Padding="5"
+                    Margin="0 0 20 0">A-</TextBox>
+                <TextBox
+                    x:Name="TBSuffix"
+                    Padding="5"
+                    Grid.Column="1" Margin="0 0 20 0">-Z</TextBox>
+            </Grid>
+            <!--#endregion-->
+            <!--#region second line -->
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Label>От</Label>
+                <Label Grid.Column="1">До</Label>
+            </Grid>
+            <Grid
+                Margin="0 -3 0 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="40*"/>
+                    <ColumnDefinition Width="3*"/>
+                    <ColumnDefinition Width="37*"/>
+                </Grid.ColumnDefinitions>
+                <TextBox 
+                    Padding="5"
+                    x:Name="TBFrom"
+                    Margin="0,0,20,0">10</TextBox>
+                <TextBox
+                    x:Name="TBTo"
+                    Padding="5"
+                    Grid.Column="1" Margin="0,0,20,0" Grid.ColumnSpan="2">100</TextBox>
+            </Grid>
+            <!--#endregion-->
+            <!--#region third line -->
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Label>Шаг</Label>
+                <Label Grid.Column="1">Маска</Label>
+            </Grid>
+            <Grid
+                Margin="0 -3 0 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <TextBox
+                    x:Name="TBStep"
+                    Padding="5"
+                    Margin="0 0 20 0">10</TextBox>
+                <TextBox 
+                    x:Name="TBMask"
+                    Padding="5"
+                    Grid.Column="1" Margin="0 0 20 0">$$$$</TextBox>
+            </Grid>
+            <!--#endregion-->
+        </StackPanel>
+        <!--#endregion-->
+    </Grid>
+
+
+</Window>
