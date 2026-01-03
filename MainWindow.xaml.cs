@@ -1,5 +1,11 @@
-﻿using System;
+﻿using BarcodeStandard;
+using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Drawing;
+using SkiaSharp;
+using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,20 +19,27 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using BarcodeStandard;
-using ClosedXML.Excel;
-using SkiaSharp;
+using ZXing;
+using ZXing.Common;
+using ZXing.OneD;
+using ZXing.QrCode;
+using PdfSharp.Pdf;
+using PdfSharp.Drawing;
 
 namespace barcode_gen
 {
+
     /// <summary>
     /// Логика взаимодействия для MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
+        bool isDragging;
+        System.Windows.Point lastPos;
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = new MainViewModel();
         }
 
         #region event methods
@@ -81,14 +94,15 @@ namespace barcode_gen
         }
         #endregion
         #region helper methods
-        private BarcodeStandard.Type getLabelType(MainWindow mainWindow)
+        private BarcodeFormat getLabelType(MainWindow mainWindow)
         {
             var type = ((ComboBoxItem)this.CBType.SelectedItem).Content;
             switch(type) 
             {
-                case "Code 128": return BarcodeStandard.Type.Code128;
-                case"EAN 13" : return BarcodeStandard.Type.Ean13;
-                default: return BarcodeStandard.Type.Code128;
+                case "Code 128": return BarcodeFormat.CODE_128;
+                case"Matrix" : return BarcodeFormat.DATA_MATRIX;
+                case "Qr code": return BarcodeFormat.QR_CODE;
+                default: return BarcodeFormat.CODE_128;
             }
         }
         private (int, int) getSizeOfLabel(MainWindow mainWindow)
@@ -112,48 +126,244 @@ namespace barcode_gen
             var data = this.TBData.Text.Split("\r\n".ToCharArray());
             return data;
         }
-        public void SaveBitmapToFile(string[] dataList, string curDirectory, int labelWidth, int labelHeight, BarcodeStandard.Type type)
+        public void SaveBitmapToFile(string[] dataList, string curDirectory, int labelWidth, int labelHeight, BarcodeFormat type)
         {
-            var wb = new XLWorkbook();
-            var ws = wb.Worksheets.Add("Штрихкоды");
-            int rowIndex = 1;
-
-            foreach (var data in dataList)
-            {
-                if (data != "")
+            List<LabelElement> labels = new List<LabelElement> { 
+                new LabelElement
                 {
-                    using (var ms = new MemoryStream())
-                    {
-                        var barcodeLib = new Barcode();
-                        barcodeLib.IncludeLabel = true; // с подписью
-                        var font = new SKFont();
-                        font.Size = 12;
-                        barcodeLib.LabelFont = font;
-                        var splited = data.Split("*".ToCharArray());
-                        if (splited.Length > 1)
-                        {
-                            barcodeLib.AlternateLabel = splited[1];
-                        }
-                        var barcodeData = splited.Length == 0 ? data : splited[0];
-                        var bmp = barcodeLib.Encode(type, barcodeData, SKColors.Black, SKColors.White, labelWidth, labelHeight);
-                        using (var imgData = bmp.Encode(SKEncodedImageFormat.Png, 100))
-                        {
-                            imgData.SaveTo(ms);
-                        }
+                    Value = "ABC123",
+                    X = 5,
+                    Y = 5,
+                    Width = 50,
+                    Height = 30,
+                    Kind = BarcodeFormat.CODE_128,
+                    Text = "Товар 1"
+                },
+                new LabelElement
+                {
+                    Value = "XYZ456",
+                    X = 5,
+                    Y = 5,
+                    Width = 50,
+                    Height = 30,
+                    Kind = BarcodeFormat.CODE_128,
+                    Text = "Товар 2"
+                },
+                new LabelElement
+                {
+                    Value = "111222",
+                    X = 5,
+                    Y = 5,
+                    Width = 50,
+                    Height = 30,
+                    Kind = BarcodeFormat.CODE_128,
+                    Text = "Штрихкод"
+                }
+            };
+            SaveLabelsToPdf(labels, "C:\\Users\\Work\\Pictures\\lable.pdf");
+        }
+        public void SaveLabelsToPdf(List<LabelElement> labels, string path)
+        {
+            PdfDocument doc = new PdfDocument();
 
-                        ms.Position = 0;
+            foreach (var label in labels)
+            {
+                // создаём новую страницу
+                PdfPage page = doc.AddPage();
 
-                        ws.AddPicture(ms)
-                          .MoveTo(ws.Cell(rowIndex + 1, 1))
-                          .WithSize(labelWidth, labelHeight);
+                // можно настроить размер страницы под наклейку
+                page.Width = 60;   // в пунктов (примерно px)
+                page.Height = 40;
 
-                        rowIndex += 7; // смещение для следующего блока//5 to small
-                    }
+                XGraphics gfx = XGraphics.FromPdfPage(page);
+
+                // генерируем штрих-код
+                Bitmap bmp = BarcodeRenderer.Render(label.Kind, label.Value, 60, 40);
+
+                // сохраняем Bitmap в поток
+                using (var ms = new MemoryStream())
+                {
+                    bmp.Save(ms, ImageFormat.Png);
+                    ms.Position = 0;
+
+                    XImage xImg = XImage.FromStream(ms);
+                    gfx.DrawImage(xImg, label.X, label.Y, label.Width, label.Height); // рисуем на всю страницу
+                }
+
+                // опционально добавить текст
+               /* if (!string.IsNullOrEmpty(label.Text))
+                {
+                    gfx.DrawString(label.Text,
+                        new XFont("Arial", 12),
+                        XBrushes.Black,
+                        new XRect(0, label.Height - 20, label.Width, 20),
+                        XStringFormats.Center);
+                }*/
+            }
+
+            // сохраняем PDF
+            doc.Save(path);
+        }
+        #endregion
+        public class LabelElement
+        {
+            public string Value { get; set; }       // данные для штрих-кода
+            public int X { get; set; }              // позиция слева на странице (px)
+            public int Y { get; set; }              // позиция сверху на странице (px)
+            public int Width { get; set; }          // ширина наклейки (px)
+            public int Height { get; set; }         // высота наклейки (px)
+            public BarcodeFormat Kind { get; set; }   // тип штрих-кода
+            public string Text { get; set; }        // текст надписи (если нужен)
+        }
+        public static class BarcodeRenderer
+        {
+            public static Bitmap Render(
+                BarcodeFormat kind,
+                string value,
+                int widthPx,
+                int heightPx)
+            {
+                switch (kind)
+                {
+                    case BarcodeFormat.QR_CODE: return RenderQr(value, widthPx, heightPx);
+                    case BarcodeFormat.DATA_MATRIX: return RenderDataMatrix(value, widthPx, heightPx);
+                    case BarcodeFormat.CODE_128: return RenderCode128(value, widthPx, heightPx);
+
+                    default:
+                        throw new NotSupportedException(
+                            "Barcode type not supported: " + kind);
                 }
             }
 
-            // Сохраняем файл
-            wb.SaveAs(curDirectory + "\\barcodes.xlsx");
+            private static Bitmap RenderQr(string value, int w, int h)
+            {
+                var writer = new BarcodeWriter
+                {
+                    Format = BarcodeFormat.QR_CODE,
+                    Options = new QrCodeEncodingOptions
+                    {
+                        Width = w,
+                        Height = h,
+                        Margin = 0,
+                        ErrorCorrection = ZXing.QrCode.Internal.ErrorCorrectionLevel.M
+                    }
+                };
+                return writer.Write(value);
+            }
+            private static Bitmap RenderCode128(string value, int w, int h)
+            {
+                var writer = new BarcodeWriter
+                {
+                    Format = BarcodeFormat.CODE_128,
+                    Options = new Code128EncodingOptions
+                    {
+                        Width = w,
+                        Height = h,
+                        Margin = 0,
+                        PureBarcode = true
+                    }
+                };
+                return writer.Write(value);
+            }
+            private static Bitmap RenderDataMatrix(string value, int w, int h)
+            {
+                var writer = new BarcodeWriter
+                {
+                    Format = BarcodeFormat.DATA_MATRIX,
+                    Options = new EncodingOptions
+                    {
+                        Width = w,
+                        Height = h,
+                        Margin = 0
+                    }
+                };
+                return writer.Write(value);
+            }
+        }
+        public static class BitmapConverter
+        {
+            public static ImageSource ToImageSource(Bitmap bitmap)
+            {
+                using (var ms = new MemoryStream())
+                {
+                    bitmap.Save(ms, ImageFormat.Png);
+                    ms.Position = 0;
+
+                    var image = new BitmapImage();
+                    image.BeginInit();
+                    image.CacheOption = BitmapCacheOption.OnLoad;
+                    image.StreamSource = ms;
+                    image.EndInit();
+                    image.Freeze();
+
+                    return image;
+                }
+            }
+        }
+        #region dnd
+        private void TextBlock_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            isDragging = true;
+            lastPos = e.GetPosition(LabelCanvas);
+            ((UIElement)sender).CaptureMouse();
+        }
+
+        private void TextBlock_MouseMove(object sender, MouseEventArgs e)
+        {
+           
+            if (!isDragging) return;
+
+            var element = (UIElement)sender;
+            var pos = e.GetPosition(LabelCanvas);
+            var elementLeft = Canvas.GetLeft(element) + lastPos.X;
+            var elementTop = Canvas.GetTop(element) + lastPos.Y;
+            var dx = pos.X - lastPos.X;
+            var dy = pos.Y - lastPos.Y;
+            var leftX = pos.X;
+            var rightX = pos.X + LabelCanvas.ActualWidth;
+            var topY = pos.Y;
+            var downY = pos.Y + LabelCanvas.ActualHeight;
+            #region shifting 
+            if (topY < (elementTop + dy) && downY > (elementTop + element.DesiredSize.Height + dy))
+            {
+                Canvas.SetTop(element, Canvas.GetTop(element) + dy);
+            }
+            else 
+            {
+                if (topY >= (elementTop + dy))
+                {
+                    Canvas.SetTop(element, Canvas.GetTop(element) + 1);
+                }
+                else 
+                { 
+                    Canvas.SetTop(element, Canvas.GetTop(element) - 1); 
+                }
+            }
+            if (leftX < (elementLeft + dx) && rightX > (elementLeft + element.DesiredSize.Width + dx))
+            {
+                Canvas.SetLeft(element, Canvas.GetLeft(element) + dx);
+            }
+            else
+            {
+                if (leftX >= (elementLeft + dx))
+                {
+                    Canvas.SetLeft(element, Canvas.GetLeft(element) + 1);
+                }
+                else
+                {
+                    Canvas.SetLeft(element, Canvas.GetLeft(element) - 1);
+                }
+            }
+            #endregion
+            lastPos = pos;
+            //Console.WriteLine($"canvas: {leftX}:{rightX} {topY}:{downY}");
+            //Console.WriteLine($"element: {Canvas.GetLeft(element)}:{Canvas.GetTop(element)}");
+        }
+
+        private void TextBlock_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            isDragging = false;
+            ((UIElement)sender).ReleaseMouseCapture();
         }
         #endregion
     }

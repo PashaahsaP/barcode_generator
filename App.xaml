@@ -2,8 +2,9 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:barcode_gen"
+             xmlns:localConverter="clr-namespace:barcode_gen.Converter"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <localConverter:EnumToBoolConverter x:Key="EnumToBoolConverter"/>
     </Application.Resources>
 </Application>
