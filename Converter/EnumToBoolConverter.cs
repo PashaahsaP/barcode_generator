@@ -29,7 +29,7 @@ namespace barcode_gen.Converter
             CultureInfo culture)
         {
             if ((bool)value)
-                return Enum.Parse(targetType, parameter.ToString());
+                return barcode_gen.Enum.Mode.Parse(targetType, parameter.ToString());
 
             return Binding.DoNothing;
         }

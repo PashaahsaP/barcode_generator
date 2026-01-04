@@ -2,6 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <SolidColorBrush x:Key="PrimaryBrush" Color="#2b579a"/>
+    <SolidColorBrush x:Key="PrimaryHoverBrush" Color="#3A6EBF"/>
+    <SolidColorBrush x:Key="PrimaryPressedBrush" Color="#1F4275"/>
     <SolidColorBrush x:Key="PrimaryWhite" Color="#ffffff"/>
 
     <Color x:Key="PrimaryColor">#2b579a</Color>

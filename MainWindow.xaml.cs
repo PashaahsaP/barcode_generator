@@ -48,8 +48,8 @@ namespace barcode_gen
             string curDirectory = Directory.GetCurrentDirectory();
             string[] dataList = GetData(this);
             var sizes = getSizeOfLabel(this);
-            var type = getLabelType(this);
-            SaveBitmapToFile(dataList, curDirectory, sizes.Item1, sizes.Item2, type);//item1 is width item2 is height
+            //var type = getLabelType(this);
+            SaveBitmapToFile(dataList, curDirectory, sizes.Item1, sizes.Item2, BarcodeFormat.CODE_128);//item1 is width item2 is height/ REMOVE  BarcodeFormat.CODE_128 it is stub
         }
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
@@ -99,7 +99,7 @@ namespace barcode_gen
         }
         #endregion
         #region helper methods
-        private BarcodeFormat getLabelType(MainWindow mainWindow)
+/*        private BarcodeFormat getLabelType(MainWindow mainWindow)
         {
             var type = ((ComboBoxItem)this.CBType.SelectedItem).Content;
             switch(type) 
@@ -109,7 +109,8 @@ namespace barcode_gen
                 case "Qr code": return BarcodeFormat.QR_CODE;
                 default: return BarcodeFormat.CODE_128;
             }
-        }
+        }*/
+        // TODO перенести во view model
         private (int, int) getSizeOfLabel(MainWindow mainWindow)
         {
             foreach (System.Windows.Controls.RadioButton item in this.GSizes.Children)

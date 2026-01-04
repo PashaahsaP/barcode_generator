@@ -37,7 +37,72 @@
                     </Trigger>
                 </ControlTemplate.Triggers>
             </ControlTemplate>
+                <ControlTemplate TargetType="ComboBox" x:Key="BasicComboBox">
+                    <Grid>
+                        <!-- Основная кнопка -->
+                        <ToggleButton x:Name="ToggleButton" 
+                              BorderThickness="1"
+                              IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                                      Foreground="White">
+                            
+                            <ContentPresenter  Content="{TemplateBinding SelectionBoxItem}" 
+                                      Margin="5" />
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border x:Name="border"  Background="{StaticResource PrimaryBrush}"
+                                             BorderBrush="{StaticResource PrimaryBrush}"
+                                             CornerRadius="2">
+                                    <StackPanel Orientation="Horizontal">
+                                        <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Content="{TemplateBinding Content}"/>
+                                        
+                                    </StackPanel>
+                                        
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="border" Property="Background" Value="{StaticResource PrimaryHoverBrush}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="border" Property="Background" Value="{StaticResource PrimaryPressedBrush}"/>
+                                        </Trigger>
+                                    
+                                </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+                    <!-- Всплывающий список -->
+                        <Popup x:Name="Popup"
+                           Placement="Bottom"
+                           IsOpen="{TemplateBinding IsDropDownOpen}"
+                           AllowsTransparency="True"
+                           Focusable="False"
+                           PopupAnimation="Fade"
+                           Width="{Binding ActualWidth, ElementName=ToggleButton}"
+                               
+                               >
 
+                        <Border  Background="{StaticResource PrimaryBrush}" 
+                                 BorderBrush="{StaticResource PrimaryBrush}" 
+                                 BorderThickness="1"
+                                 x:Name="PopupBorder"
+                                 >
+                                <ScrollViewer Margin="0">
+                                    
+                                    <ItemsPresenter  />
+                                </ScrollViewer>
+                            </Border>
+                            
+                        </Popup>
+                     
+                </Grid>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsDropDownOpen" Value="True">
+                        <Setter TargetName="PopupBorder" Property="Background" Value="Red"/>
+                    </Trigger>
+                </ControlTemplate.Triggers>
+                </ControlTemplate>
         </ResourceDictionary>
         
     </Window.Resources>
@@ -52,15 +117,60 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <!--#region Left -->
-        <ComboBox 
-            x:Name="CBType" 
-            Margin="10 10 0 0" 
-            Grid.Column="0"
-            Grid.Row="0">
-            <ComboBoxItem IsSelected="True">Code 128</ComboBoxItem>
-            <ComboBoxItem >Qr</ComboBoxItem>
-            <ComboBoxItem >Matrix</ComboBoxItem>
-        </ComboBox>
+        
+        <Grid Grid.Column="0" Grid.Row="0" Grid.RowSpan="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="0.1*"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Button  
+                    Command="{Binding AddBlockCommand}"
+                    Template="{DynamicResource ButtonTemplate1}"
+                    Margin="3"> Добавить </Button>
+            </Grid>
+            <Grid Grid.Row="1">
+                <StackPanel Height="150">
+                <ComboBox 
+                    Template="{DynamicResource BasicComboBox}"
+                    Grid.Column="0"
+                    Grid.Row="0"
+                    Height="50">
+                        <ComboBoxItem Height="20">text</ComboBoxItem>
+
+                    </ComboBox>
+                <ComboBoxItem Height="20">text</ComboBoxItem>
+                </StackPanel>
+                <ItemsControl  ItemsSource="{Binding Blocks}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border CornerRadius="5" 
+                                BorderBrush="{StaticResource PrimaryBrush}" 
+                                BorderThickness="1"
+                                Margin="5"
+                                Padding="5">
+                                <StackPanel Orientation="Horizontal">
+                                    <ComboBox 
+                                            ItemsSource="{Binding Types}"
+                                            SelectedItem="{Binding SelectedType, Mode=TwoWay}"
+                                            Grid.Column="0"
+                                            Grid.Row="0">           
+                                      
+                                    </ComboBox>
+
+                                    <Button Content="X"
+                                    Command="{Binding RemoveCommand}" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
+        </Grid>
      
         <Grid Grid.Column="0"
               Grid.Row="1">
