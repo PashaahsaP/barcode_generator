@@ -92,6 +92,11 @@ namespace barcode_gen
             }
 
         }
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
+            TBData.Text = "";
+
+        }
         #endregion
         #region helper methods
         private BarcodeFormat getLabelType(MainWindow mainWindow)
@@ -366,5 +371,7 @@ namespace barcode_gen
             ((UIElement)sender).ReleaseMouseCapture();
         }
         #endregion
+
+       
     }
 }
