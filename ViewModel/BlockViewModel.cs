@@ -4,16 +4,23 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Input;
 
 namespace barcode_gen.ViewModel
 {
-    public class BlockViewModel
+    public class BlockViewModel : INotifyPropertyChanged
     {
         #region varibles
+      
         private ElementTypes _selectedType;
+        //private String _textBoxState = "+";
+        private Visibility _visibility = Visibility.Collapsed;
+        private String _content = string.Empty;
+        private int linesCount = 0;
         #endregion
         #region property
+        
         public string Title { get; }
         public ElementTypes SelectedType
         {
@@ -27,10 +34,54 @@ namespace barcode_gen.ViewModel
                 }
             }
         }
+        public String TextBoxState
+        {
+            get 
+                {
+                if (Visibility == Visibility.Collapsed)
+                    return "+";
+                return "-";
+            }
+           /* set
+            {
+                if (_textBoxState != value)
+                {
+                    _textBoxState = value;
+                    OnPropertyChanged();
+                }
+            }*/
+        }
+        public Visibility Visibility
+        {
+            get => _visibility;
+            set
+            {
+                if (_visibility != value)
+                {
+                    _visibility = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(this.TextBoxState));
+                }
+            }
+        }
+        public int LinesCount { get; set; }
         public ObservableCollection<ElementTypes> Types { get; }
+        public String Content { get => _content;
+            set
+            {
+                var data = value.Split('\n').Where(item => item.Replace(" ", "").Length != 0).Count();
+                _content = value;
+                LinesCount = data;
+                OnPropertyChanged(nameof(this.Content));
+                OnPropertyChanged(nameof(this.LinesCount));
+
+            } 
+        }
         #endregion
         #region command
         public ICommand RemoveCommand { get; }
+        public ICommand SwitchVisibilityCommand { get; }
+
         #endregion
         #region ctor
         public BlockViewModel(Action<BlockViewModel> removeAction)
@@ -43,14 +94,20 @@ namespace barcode_gen.ViewModel
 
             // Можно задать начальное значение
             SelectedType = Types.First();
-
             RemoveCommand = new RelayCommand(() =>
             {
                 removeAction(this);
             });
+            SwitchVisibilityCommand = new RelayCommand(() =>
+            {
+                if (Visibility.Collapsed == Visibility)
+                    Visibility = Visibility.Visible;
+                else
+                    Visibility = Visibility.Collapsed;
+
+            });
         }
         #endregion
-
         #region onProperty
         public event PropertyChangedEventHandler PropertyChanged;
 

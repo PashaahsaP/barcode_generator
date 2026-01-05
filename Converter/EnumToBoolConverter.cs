@@ -8,7 +8,7 @@ using System.Windows.Data;
 
 namespace barcode_gen.Converter
 {
-    internal class EnumToBoolConverter : IValueConverter
+    public class EnumToBoolConverter : IValueConverter
     {
         public object Convert(
             object value,

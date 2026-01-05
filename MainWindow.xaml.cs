@@ -1,7 +1,6 @@
-﻿using BarcodeStandard;
-using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Drawing;
-using SkiaSharp;
+﻿using DocumentFormat.OpenXml.InkML;
+using PdfSharp.Drawing;
+using PdfSharp.Pdf;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -9,22 +8,16 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using ZXing;
 using ZXing.Common;
 using ZXing.OneD;
 using ZXing.QrCode;
-using PdfSharp.Pdf;
-using PdfSharp.Drawing;
+using Canvas = System.Windows.Controls.Canvas;
 
 namespace barcode_gen
 {
@@ -39,7 +32,9 @@ namespace barcode_gen
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new MainViewModel();
+            var vm = new MainViewModel();
+            DataContext = vm;
+
         }
 
         #region event methods
@@ -99,17 +94,17 @@ namespace barcode_gen
         }
         #endregion
         #region helper methods
-/*        private BarcodeFormat getLabelType(MainWindow mainWindow)
-        {
-            var type = ((ComboBoxItem)this.CBType.SelectedItem).Content;
-            switch(type) 
-            {
-                case "Code 128": return BarcodeFormat.CODE_128;
-                case"Matrix" : return BarcodeFormat.DATA_MATRIX;
-                case "Qr code": return BarcodeFormat.QR_CODE;
-                default: return BarcodeFormat.CODE_128;
-            }
-        }*/
+        /*        private BarcodeFormat getLabelType(MainWindow mainWindow)
+                {
+                    var type = ((ComboBoxItem)this.CBType.SelectedItem).Content;
+                    switch(type) 
+                    {
+                        case "Code 128": return BarcodeFormat.CODE_128;
+                        case"Matrix" : return BarcodeFormat.DATA_MATRIX;
+                        case "Qr code": return BarcodeFormat.QR_CODE;
+                        default: return BarcodeFormat.CODE_128;
+                    }
+                }*/
         // TODO перенести во view model
         private (int, int) getSizeOfLabel(MainWindow mainWindow)
         {
@@ -134,7 +129,7 @@ namespace barcode_gen
         }
         public void SaveBitmapToFile(string[] dataList, string curDirectory, int labelWidth, int labelHeight, BarcodeFormat type)
         {
-            List<LabelElement> labels = new List<LabelElement> { 
+            List<LabelElement> labels = new List<LabelElement> {
                 new LabelElement
                 {
                     Value = "ABC123",
@@ -197,14 +192,14 @@ namespace barcode_gen
                 }
 
                 // опционально добавить текст
-               /* if (!string.IsNullOrEmpty(label.Text))
-                {
-                    gfx.DrawString(label.Text,
-                        new XFont("Arial", 12),
-                        XBrushes.Black,
-                        new XRect(0, label.Height - 20, label.Width, 20),
-                        XStringFormats.Center);
-                }*/
+                /* if (!string.IsNullOrEmpty(label.Text))
+                 {
+                     gfx.DrawString(label.Text,
+                         new XFont("Arial", 12),
+                         XBrushes.Black,
+                         new XRect(0, label.Height - 20, label.Width, 20),
+                         XStringFormats.Center);
+                 }*/
             }
 
             // сохраняем PDF
@@ -316,13 +311,13 @@ namespace barcode_gen
 
         private void TextBlock_MouseMove(object sender, MouseEventArgs e)
         {
-           
+
             if (!isDragging) return;
 
             var element = (UIElement)sender;
             var pos = e.GetPosition(LabelCanvas);
-            var elementLeft = Canvas.GetLeft(element) + lastPos.X;
-            var elementTop = Canvas.GetTop(element) + lastPos.Y;
+            var elementLeft = System.Windows.Controls.Canvas.GetLeft(element) + lastPos.X;
+            var elementTop = System.Windows.Controls.Canvas.GetTop(element) + lastPos.Y;
             var dx = pos.X - lastPos.X;
             var dy = pos.Y - lastPos.Y;
             var leftX = pos.X;
@@ -332,17 +327,17 @@ namespace barcode_gen
             #region shifting 
             if (topY < (elementTop + dy) && downY > (elementTop + element.DesiredSize.Height + dy))
             {
-                Canvas.SetTop(element, Canvas.GetTop(element) + dy);
+                System.Windows.Controls.Canvas.SetTop(element, Canvas.GetTop(element) + dy);
             }
-            else 
+            else
             {
                 if (topY >= (elementTop + dy))
                 {
                     Canvas.SetTop(element, Canvas.GetTop(element) + 1);
                 }
-                else 
-                { 
-                    Canvas.SetTop(element, Canvas.GetTop(element) - 1); 
+                else
+                {
+                    Canvas.SetTop(element, Canvas.GetTop(element) - 1);
                 }
             }
             if (leftX < (elementLeft + dx) && rightX > (elementLeft + element.DesiredSize.Width + dx))
@@ -371,7 +366,31 @@ namespace barcode_gen
             isDragging = false;
             ((UIElement)sender).ReleaseMouseCapture();
         }
+
         #endregion
+
+        private void Thumb_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
+        {
+            var border = ResizableBorder;
+            //var text = TextBoxD;
+            var element = (UIElement)sender;
+            Rect bounds = VisualTreeHelper.GetDescendantBounds(element);
+            GeneralTransform transform =
+                element.TransformToAncestor(LabelCanvas);
+            Rect transformedBounds = transform.TransformBounds(bounds);
+            System.Windows.Point realLeft = transformedBounds.TopLeft;
+
+            double newWidth = border.ActualWidth + e.HorizontalChange;
+            double newHeight = border.ActualHeight + e.VerticalChange;
+            if (border.ActualHeight + e.VerticalChange > 20)
+            {
+                border.Height = newHeight;
+            }
+            if (border.ActualWidth + e.HorizontalChange > 30)
+            {
+                border.Width = newWidth;
+            }
+        }
 
        
     }
