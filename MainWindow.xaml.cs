@@ -27,14 +27,12 @@ namespace barcode_gen
     /// </summary>
     public partial class MainWindow : Window
     {
-        bool isDragging;
-        System.Windows.Point lastPos;
         public MainWindow()
         {
             InitializeComponent();
-            var vm = new MainViewModel();
+            var canvas = FieldCanvas;
+            var vm = new MainViewModel(FieldCanvas);
             DataContext = vm;
-
         }
 
         #region event methods
@@ -302,7 +300,7 @@ namespace barcode_gen
             }
         }
         #region dnd
-        private void TextBlock_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+       /* private void TextBlock_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             isDragging = true;
             lastPos = e.GetPosition(LabelCanvas);
@@ -365,13 +363,13 @@ namespace barcode_gen
         {
             isDragging = false;
             ((UIElement)sender).ReleaseMouseCapture();
-        }
+        }*/
 
         #endregion
 
         private void Thumb_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
         {
-            var border = ResizableBorder;
+            /*var border = ResizableBorder;
             //var text = TextBoxD;
             var element = (UIElement)sender;
             Rect bounds = VisualTreeHelper.GetDescendantBounds(element);
@@ -389,9 +387,22 @@ namespace barcode_gen
             if (border.ActualWidth + e.HorizontalChange > 30)
             {
                 border.Width = newWidth;
-            }
+            }*/
         }
 
-       
+        private void TextBlock_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+
+        }
+
+        private void TextBlock_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+
+        }
+
+        private void TextBlock_MouseMove(object sender, MouseEventArgs e)
+        {
+
+        }
     }
 }

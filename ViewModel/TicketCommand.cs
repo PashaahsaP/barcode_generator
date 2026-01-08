@@ -3,41 +3,35 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace barcode_gen
+namespace barcode_gen.ViewModel
 {
-    internal class RelayCommand : ICommand
+    internal class TicketCommand : ICommand
     {
         private readonly Action _execute;
-        private readonly Action<MouseButtonEventArgs> _executePressing;
+        private readonly Action<UiEventPayload> _executePressing;
         private readonly Func<object, bool> _canExecute;
 
-        public RelayCommand(Action execute)
-        {
-            _execute = execute;
-        }
-        public RelayCommand(Action<MouseButtonEventArgs> execute)
+  
+        public TicketCommand(Action<UiEventPayload> execute)
         {
             _executePressing = execute;
         }
-        public RelayCommand( 
-            Action execute, 
-            Func<object, bool> canExecute = null)
-        {
-            _execute = execute;
-            _canExecute = canExecute;
 
-        }
-        
-        
+
+
 
 
         public bool CanExecute(object parameter)
             => _canExecute?.Invoke(parameter) ?? true;
 
         public void Execute(object parameter)
-            => _execute();
+        {
+            var e = parameter as UiEventPayload;
+            _executePressing((UiEventPayload)parameter);
+        }
 
         public event EventHandler CanExecuteChanged;
 

@@ -3,13 +3,21 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:barcode_gen"
         mc:Ignorable="d"
         Title="MainWindow"  
-    xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
-          Width="{Binding WidthConstructorContainer, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, FallbackValue=800}"
-  Height="{Binding HeightConstructorContainer, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, FallbackValue=450}"
+        xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:local="clr-namespace:barcode_gen"
+        
+        Width="{Binding WidthConstructorContainer, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, FallbackValue=800}"
+        Height="{Binding HeightConstructorContainer, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, FallbackValue=450}"
         >
+    
+    <i:Interaction.Behaviors>
+        <local:WindowActualSizeBehavior
+        Width="{Binding WidthConstructorContainer, Mode=OneWayToSource}"
+        Height="{Binding HeightConstructorContainer, Mode=OneWayToSource}" />
+    </i:Interaction.Behaviors>
 
     <Window.Resources>
             <ResourceDictionary>
@@ -596,69 +604,20 @@
                 <RowDefinition />
                 <RowDefinition/>
             </Grid.RowDefinitions>
-            
-            <Border
-                Padding="2"
-                Grid.Row="0"
-                CornerRadius="5" 
-                BorderBrush="{StaticResource PrimaryBrush}" 
-                Height="{Binding HeightBorder}"
-                Width="{Binding WidthBorder}"
+
+            <Border Padding="2"
+                CornerRadius="5"
+                BorderBrush="Black"
                 BorderThickness="1"
-                Margin="10">
-                <Canvas
-                    x:Name="LabelCanvas"
-                    Background="Red"
-                    Grid.Row="0"
-                    Margin="0 0 20 0"
+                Width="{Binding WidthBorder}"
+                Height="{Binding HeightBorder}">
+                <Canvas x:Name="FieldCanvas"
+                    Background="LightGray"
                     Width="{Binding WidthCanvas}"
-                    Height="{Binding HeightCanvas}"
-                    VerticalAlignment="Top">
-
-
-                    <Border
-                        Canvas.Left="100"
-                        Canvas.Top="50"
-                        Background="Blue"
-                        x:Name="ResizableBorder"
-                        MouseLeftButtonDown="TextBlock_MouseLeftButtonDown"
-                        MouseMove="TextBlock_MouseMove"
-                        MouseLeftButtonUp="TextBlock_MouseLeftButtonUp"
-                        >
-                        <Border.RenderTransform>
-                            <RotateTransform Angle="0"/>
-                        </Border.RenderTransform>
-                        <Grid >
-                            <TextBlock
-                            x:Name="TextBoxD"
-                            Canvas.Left="100"
-                            Canvas.Top="50"
-                            Background="Blue"
-                            Text="Some"
-                            MouseLeftButtonDown="TextBlock_MouseLeftButtonDown"
-                            MouseMove="TextBlock_MouseMove"
-                            MouseLeftButtonUp="TextBlock_MouseLeftButtonUp"
-                        
-                            >
-                            
-                            </TextBlock>
-                            <Thumb
-                            Width="12"
-                            Height="12"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Bottom"
-                            Cursor="SizeNWSE"
-                            DragDelta="Thumb_DragDelta" >
-                                <Thumb.Template>
-                                    <ControlTemplate TargetType="Thumb">
-                                        <Grid Background="Transparent"/>
-                                    </ControlTemplate>
-                                </Thumb.Template>
-                            </Thumb>
-                        </Grid>
-                    </Border>
+                    Height="{Binding HeightCanvas}">
                 </Canvas>
             </Border>
+
             <Grid 
                 x:Name="GSizes"
                 Margin="10 0 0 0"
