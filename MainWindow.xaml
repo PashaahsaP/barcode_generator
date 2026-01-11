@@ -491,12 +491,17 @@
                 <RowDefinition/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
-        <Border Padding="5" Margin="10" 
-            Grid.Row="0"
-           CornerRadius="5" 
-           BorderBrush="{StaticResource PrimaryBrush}" 
-           BorderThickness="1">
-            <TextBox x:Name="TBData" BorderThickness="0"  AcceptsReturn="True"></TextBox>
+        <Border Padding="5" 
+                Margin="10" 
+                Grid.Row="0"
+                CornerRadius="5" 
+                BorderBrush="{StaticResource PrimaryBrush}" 
+                BorderThickness="1">
+            <TextBox 
+                x:Name="TBData" 
+                BorderThickness="0"  
+                AcceptsReturn="True"
+                Text="{Binding CenterViewModel.TbText}"></TextBox>
         </Border>
         <StackPanel 
             Grid.Row="1"
@@ -519,13 +524,16 @@
                     <ColumnDefinition/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
-                <TextBox x:Name="TBPrefix"
-                    Padding="5"
-                    Margin="0 0 20 0">A-</TextBox>
+                    <TextBox x:Name="TBPrefix"
+                            Padding="5"
+                            Margin="0 0 20 0"
+                            Text="{Binding CenterViewModel.Prefics}"
+                             ></TextBox>
                 <TextBox
                     x:Name="TBSuffix"
                     Padding="5"
-                    Grid.Column="1" Margin="0 0 20 0">-Z</TextBox>
+                    Grid.Column="1" Margin="0 0 20 0"
+                    Text="{Binding CenterViewModel.Postfics}"></TextBox>
             </Grid>
             <!--#endregion-->
             <!--#region second line -->
@@ -545,14 +553,18 @@
                     <ColumnDefinition Width="3*"/>
                     <ColumnDefinition Width="37*"/>
                 </Grid.ColumnDefinitions>
-                <TextBox 
-                    Padding="5"
-                    x:Name="TBFrom"
-                    Margin="0,0,20,0">10</TextBox>
-                <TextBox
-                    x:Name="TBTo"
-                    Padding="5"
-                    Grid.Column="1" Margin="0,0,20,0" Grid.ColumnSpan="2">100</TextBox>
+                    <TextBox 
+                        Padding="5"
+                        x:Name="TBFrom"
+                        Margin="0,0,20,0"
+                        Text="{Binding CenterViewModel.From}"></TextBox>
+                    <TextBox
+                        x:Name="TBTo"
+                        Padding="5"
+                        Grid.Column="1" 
+                        Margin="0,0,20,0" 
+                        Grid.ColumnSpan="2"
+                        Text="{Binding CenterViewModel.To}"></TextBox>
             </Grid>
             <!--#endregion-->
             <!--#region third line -->
@@ -568,17 +580,21 @@
             <Grid
                 Margin="0 -3 0 0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
+                    <ColumnDefinition Width="123.333"/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
-                <TextBox
-                    x:Name="TBStep"
-                    Padding="5"
-                    Margin="0 0 20 0">10</TextBox>
+                    <TextBox
+                        x:Name="TBStep"
+                        Padding="5"
+                        Margin="0 0 20 0"
+                        Text="{Binding CenterViewModel.Step}"
+                       ></TextBox>
                 <TextBox 
                     x:Name="TBMask"
                     Padding="5"
-                    Grid.Column="1" Margin="0 0 20 0">$$$$</TextBox>
+                    Grid.Column="1" 
+                    Margin="0 0 20 0"
+                    Text="{Binding CenterViewModel.Mask}"></TextBox>
             </Grid>
             <!--#endregion-->
         </StackPanel>
@@ -592,15 +608,16 @@
             </Grid.ColumnDefinitions>
             <Button Template="{DynamicResource ButtonTemplate1}"
                     Grid.Column="0"
-                Margin="10"
-                Content="Создать последовательность"
-                Click="Button_Click_1">
+                    Margin="10"
+                    Content="Создать последовательность"
+                    Command="{Binding CenterViewModel.CreateSequence}"
+                    >
             </Button>
             <Button Template="{DynamicResource ButtonTemplate1}"
                     Grid.Column="1"
-                Margin="10"
-                Content="Очистить"
-                Click="Button_Click_2"> 
+                    Command="{Binding CenterViewModel.ClearField}"
+                    Margin="10"
+                    Content="Очистить"> 
             </Button>
             
         </Grid>
@@ -659,18 +676,18 @@
                             Grid.ColumnSpan="2" 
                             Orientation="Horizontal">
                     <ComboBox 
-                        ItemsSource="{Binding ConfingItems}"
+                        ItemsSource="{Binding ConfingItemNames}"
                         Width="123"
                         Margin="0 0 5 0"
                         SelectedIndex="0"
                         Grid.Column="0"
                         Grid.Row="0"
-                        SelectedItem="{Binding SelectedConfigItem}"
+                        SelectedItem="{Binding SelectedConfigItemName}"
                         Style="{DynamicResource BaseComboBox}">
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="SelectionChanged">
                                 <i:InvokeCommandAction Command="{Binding SelectConfigCommand}"
-                                CommandParameter="{Binding SelectedConfigItem, RelativeSource={RelativeSource AncestorType=ComboBox}}"/>
+                                CommandParameter="{Binding SelectedConfigItemName, RelativeSource={RelativeSource AncestorType=ComboBox}}"/>
                             </i:EventTrigger>
                         </i:Interaction.Triggers>
                     </ComboBox>
@@ -684,7 +701,7 @@
                         <Border  Background="White" BorderBrush="Gray" BorderThickness="1" Padding="10">
                             <StackPanel>
                                 <TextBlock Margin="0 0 0 5" Text="Введи название конфига"/>
-                                <TextBox Padding="7" Width="150" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding ConfigName}" Padding="7" Width="150" Margin="0,0,0,5"/>
                                 <Button Padding="3" Command ="{Binding AddingConfigCommand}" Margin="0 0 0 5" Template="{DynamicResource ButtonTemplate1}" Content="OK" Width="60"/>
                                 <Button Padding="3" Command="{Binding CloseConfigDialogCommand}" Template="{DynamicResource ButtonTemplate1}" Content="Отмена" Width="60"/>
                             </StackPanel>

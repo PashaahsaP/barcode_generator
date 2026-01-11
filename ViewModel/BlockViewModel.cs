@@ -28,16 +28,12 @@ namespace barcode_gen.ViewModel
         #region varibles
 
         private ElementTypes _selectedType = ElementTypes.Text;
-        //private String _textBoxState = "+";
         private Visibility _visibility = Visibility.Collapsed;
         private String _content = string.Empty;
         private List<String> _contentData = new List<string>();
         private int _blockLeft= 100;
         private int _blockTop = 100;
-        private ProportionalPoint _leftTop;
-        private ProportionalPoint _rightTop;
-        private ProportionalPoint _leftDown;
-        private ProportionalPoint _rightDown;
+
         
        
         #endregion
@@ -54,20 +50,8 @@ namespace barcode_gen.ViewModel
                 OnPropertyChanged();
             } 
         }
-        public string Title { get; }
-        public ElementTypes SelectedType
-        {
-            get => _selectedType;
-            set
-            {
-                if (_selectedType != value)
-                {
-                    _selectedType = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public String TextBoxState
+        public int LinesCount { get; set; }
+        public string TextBoxState
         {
             get 
                 {
@@ -84,6 +68,28 @@ namespace barcode_gen.ViewModel
                 }
             }*/
         }
+        public string Content
+        {
+            get => _content;
+            set
+            {
+                var data = value.Split('\n').Where(item => item.Replace(" ", "").Length != 0).Count();
+                _content = value;
+                ContentData = value.Split('\n').Select(item => item.TrimEnd()).Where(item => item != "").ToList();
+                LinesCount = data;
+                OnPropertyChanged(nameof(this.Content));
+                OnPropertyChanged(nameof(this.LinesCount));
+
+            }
+        }
+        public string Title { get; set; } = "";
+        public double X { get; set; }
+        public double Y { get; set; }
+        public double H { get; set; }
+        public double W { get; set; }
+        public double mainWidth { get; set; }
+        public double mainHeight { get; set; }
+        public double Angel { get; set; }
         public Visibility Visibility
         {
             get => _visibility;
@@ -97,20 +103,19 @@ namespace barcode_gen.ViewModel
                 }
             }
         }
-        public int LinesCount { get; set; }
-        public ObservableCollection<ElementTypes> Types { get; }
-        public String Content { get => _content;
+        public ElementTypes SelectedType
+        {
+            get => _selectedType;
             set
             {
-                var data = value.Split('\n').Where(item => item.Replace(" ", "").Length != 0).Count();
-                _content = value;
-                ContentData = value.Split('\n').Select(item => item.TrimEnd()).Where(item => item != "").ToList();
-                LinesCount = data;
-                OnPropertyChanged(nameof(this.Content));
-                OnPropertyChanged(nameof(this.LinesCount));
-
-            } 
+                if (_selectedType != value)
+                {
+                    _selectedType = value;
+                    OnPropertyChanged();
+                }
+            }
         }
+        public ObservableCollection<ElementTypes> Types { get; }
         public List<String> ContentData
         {
             get { return _contentData; }
@@ -122,49 +127,8 @@ namespace barcode_gen.ViewModel
         }
         public Border Border{ get; set; }
         public TextBlock Text {  get; set; }
-        public ProportionalPoint LeftTop { get => _leftTop; set
-            {
-                if (Border == null)
-                    return;
-                _leftTop = value;
-                OnPropertyChanged();
-            }
-        }
-        public ProportionalPoint RightTop
-        {
-            get => _rightTop; set
-            {
-                if (Border == null)
-                    return;
-                _rightTop = value;
-                OnPropertyChanged();
-            }
-        }
-        public ProportionalPoint LeftDown
-        {
-            get => _leftDown; set
-            {
-                if (Border == null)
-                    return;
-                _leftDown = value;
-                OnPropertyChanged();
-            }
-        }
-        public ProportionalPoint RightDown
-        {
-            get => _rightDown; set
-            {
-                if (Border == null)
-                    return;
-                _rightDown = value;
-                OnPropertyChanged();
-            }
-        }
-        public double X { get; set; }
-        public double Y { get; set;  }
-        public double H { get; set; }
-        public double W { get; set; }
-        public double Angel { get; set; }
+      
+
 
         #endregion
         #region command

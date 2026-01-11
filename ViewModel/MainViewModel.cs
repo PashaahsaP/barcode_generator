@@ -6,8 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Windows;
 
 using System.Windows.Controls;
@@ -183,8 +185,9 @@ namespace barcode_gen
                 OnPropertyChanged(nameof(HeightCanvas));
             }
         }
-        public Config ConfingItems { get; set; }
-        public Config SelectedConfigItem { get; set;  }
+        public Config Config { get; set; }
+        
+        public List<string> ConfingItemNames{ get;set;}
         public double WidthConstructorContainer
         {
             get => _widthConstructorContainer;
@@ -252,6 +255,9 @@ namespace barcode_gen
         }
         public double PrevWidthCanvas { get; set; } = 0;
         public double PrevHeightCanvas { get; set; } = 0;
+        public string ConfigName { get; set; } = string.Empty;
+        public string SelectedConfigItemName { get; set; }
+        public CenterViewModel CenterViewModel { get; set; }
         #endregion
         #region command
         public ICommand AddBlockCommand { get; }
@@ -263,6 +269,7 @@ namespace barcode_gen
         #region ctor
         public MainViewModel(Canvas canvas, Popup popup)
         {
+            CenterViewModel = new CenterViewModel();
             AddBlockCommand = new RelayCommand(AddBlock);
             /*SelectConfigCommand = new RelayCommand(AddConfig);*/
             AddConfigCommand = new RelayCommand(AddConfig);
@@ -273,67 +280,16 @@ namespace barcode_gen
         }
         #endregion
         #region methods
-
-        public void ChangeSize(double width, double height, double prevWidth, double prevHeight)
+        /// <summary>
+        /// For change elements in canvas
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+ 
+        public void ChangeSize()
         {
-            /*  if (Blocks.Count == 0)
-                  return;
-
-
-
-
-              double scaleX = WidthCanvas / PrevWidthCanvas;
-              double scaleY = HeightCanvas / PrevHeightCanvas;
-
-              foreach (var block in Blocks)
-              {
-                  var fe = (FrameworkElement)block.Border;
-
-                  RotateTransform rt;
-
-                  if (fe.RenderTransform is RotateTransform existing)
-                  {
-                      rt = existing; // 🔥 ВАЖНО
-                  }
-                  else
-                  {
-                      rt = new RotateTransform(0);
-                      fe.RenderTransform = rt;
-                      fe.RenderTransformOrigin = new Point(0.5, 0.5);
-                  }
-                  block.Angel = rt.Angle;
-                  var border = block.Border;
-                  var topLeftX = Canvas.GetLeft(border);
-                  var topLeftY = Canvas.GetTop(border);
-                  var cX = topLeftX + (block.W / 2);
-                  var cY = topLeftY + (block.H / 2);
-                  // 1) Масштабируем центр фигуры
-                  block.X *= scaleX;
-                  block.Y *= scaleY;
-
-                  // 2) Масштабируем ЛОГИЧЕСКИЕ размеры
-                  block.W *= scaleX;
-                  block.H *= scaleY;
-
-
-                  border.Width = block.W;
-                  border.Height = block.H;
-
-                  Canvas.SetLeft(border, block.X - block.W / 2);
-                  Canvas.SetTop(border, block.Y - block.H / 2);
-
-                  border.RenderTransform = new RotateTransform(block.Angel);
-                  border.RenderTransformOrigin = new Point(0.5, 0.5);
-              }
-
-              PrevWidthCanvas = WidthCanvas;
-              PrevHeightCanvas = HeightCanvas;*/
-
             if (Blocks.Count == 0)//TODO сделать рабочее маштибирование для повернутых объектов. Ширина в высоту перетекает и обратно.
                 return;
-
-
-
 
             var proportionWidth = WidthCanvas / PrevWidthCanvas;
             var proportionHeight = HeightCanvas / PrevHeightCanvas;
@@ -492,6 +448,19 @@ namespace barcode_gen
         private void AddingConfig()
         {
             _popup.IsOpen = false;
+            var conf = new Config()
+            {
+                Configs =
+                {
+                    new ConfigItem(){
+                        Blocks = Blocks.Select(item => new BlockItem(item)).ToList(),
+                        Name = ConfigName
+                    }
+                }
+            };
+            SaveConfig(conf);
+            
+            
         }
         private void CloseConfigDialog()
         {
@@ -642,7 +611,11 @@ namespace barcode_gen
 
             _lastPos = shiftScan;
         }
-        
+        public static void SaveConfig(Config config)
+        {
+            string json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText("config.json", json);
+        }
         #region onProperty
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(
