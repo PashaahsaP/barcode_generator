@@ -11,6 +11,8 @@
         
         Width="{Binding WidthConstructorContainer, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, FallbackValue=800}"
         Height="{Binding HeightConstructorContainer, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, FallbackValue=450}"
+        SizeChanged="Window_SizeChanged"
+        Loaded="Window_Loaded"
         >
     
     <i:Interaction.Behaviors>
@@ -420,13 +422,20 @@
                                         <RowDefinition/>
                                         <RowDefinition/>
                                     </Grid.RowDefinitions>
+                                    <!--SelectedItem="{Binding SelectedType, Mode=TwoWay}"-->
                                     <ComboBox 
                                             ItemsSource="{Binding Types}"
-                                            SelectedItem="{Binding SelectedType, Mode=TwoWay}"
+                                            SelectedIndex="0"
                                             Grid.Column="0"
                                             Grid.Row="0"
-                                            Style="{DynamicResource BaseComboBox}">           
-                                      
+                                            SelectedItem="{Binding SelectedItem}"
+                                            Style="{DynamicResource BaseComboBox}">
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="SelectionChanged">
+                                                <i:InvokeCommandAction Command="{Binding OptionChangedCommand}"
+                                                                    CommandParameter="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType=ComboBox}}"/>
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
                                     </ComboBox>
                                     <TextBlock 
                                         Margin="10 2 0 0" 
@@ -604,7 +613,7 @@
                 <RowDefinition />
                 <RowDefinition/>
             </Grid.RowDefinitions>
-
+            
             <Border Padding="2"
                 CornerRadius="5"
                 BorderBrush="Black"
@@ -627,6 +636,11 @@
                     <ColumnDefinition Width="0.5*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="0.1*"/>
+                    <RowDefinition Height="0.17*"/>
+                    <RowDefinition Height="0.75*"/>
+                </Grid.RowDefinitions>
                 <RadioButton 
                     Grid.Column="0" GroupName="Label"
                     Content="Маленькая"
@@ -640,6 +654,43 @@
                     IsChecked="{Binding SelectedMode,
                              Converter={StaticResource EnumToBoolConverter},
                              ConverterParameter=Large}" />
+                <StackPanel Grid.Row="1" 
+                            Grid.Column="0" 
+                            Grid.ColumnSpan="2" 
+                            Orientation="Horizontal">
+                    <ComboBox 
+                        ItemsSource="{Binding ConfingItems}"
+                        Width="123"
+                        Margin="0 0 5 0"
+                        SelectedIndex="0"
+                        Grid.Column="0"
+                        Grid.Row="0"
+                        SelectedItem="{Binding SelectedConfigItem}"
+                        Style="{DynamicResource BaseComboBox}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="SelectionChanged">
+                                <i:InvokeCommandAction Command="{Binding SelectConfigCommand}"
+                                CommandParameter="{Binding SelectedConfigItem, RelativeSource={RelativeSource AncestorType=ComboBox}}"/>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </ComboBox>
+                    <Button
+                        x:Name="AddButton"
+                        Template="{DynamicResource ButtonTemplate1}"
+                        Padding="4 0 4 0"
+                        Command ="{Binding AddConfigCommand}">Добавить</Button
+                        >
+                    <Popup Name="ConfigPopup" StaysOpen="False" PlacementTarget="{Binding ElementName=FieldCanvas}">
+                        <Border  Background="White" BorderBrush="Gray" BorderThickness="1" Padding="10">
+                            <StackPanel>
+                                <TextBlock Margin="0 0 0 5" Text="Введи название конфига"/>
+                                <TextBox Padding="7" Width="150" Margin="0,0,0,5"/>
+                                <Button Padding="3" Command ="{Binding AddingConfigCommand}" Margin="0 0 0 5" Template="{DynamicResource ButtonTemplate1}" Content="OK" Width="60"/>
+                                <Button Padding="3" Command="{Binding CloseConfigDialogCommand}" Template="{DynamicResource ButtonTemplate1}" Content="Отмена" Width="60"/>
+                            </StackPanel>
+                        </Border>
+                    </Popup>
+                </StackPanel>
             </Grid>
             
             <!--#endregion-->
@@ -648,6 +699,7 @@
             Template="{DynamicResource ButtonTemplate1}"  
             Grid.Column="2" 
             Margin="10"
+            Click="Button_Click"
             Grid.Row="1" >Создать</Button>
     </Grid>
 

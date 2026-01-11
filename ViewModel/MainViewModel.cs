@@ -21,10 +21,7 @@ using Canvas = System.Windows.Controls.Canvas;
 
 namespace barcode_gen
 {
-    public enum Direction
-    {
-        Left, Right , Top , Bottom
-    }
+ 
     #region Helper class
     /// <summary>
     /// Cоотношение высоты и ширины
@@ -125,7 +122,7 @@ namespace barcode_gen
     }
     #endregion
 
-    internal class MainViewModel : INotifyPropertyChanged
+    public class MainViewModel : INotifyPropertyChanged
     {
         #region varible
         private double _widthConstructorContainer = 800;
@@ -137,6 +134,7 @@ namespace barcode_gen
         private bool _isDragging;
         private System.Windows.Point _lastPos;
         private Canvas _canvas;
+        private Popup _popup;
         private WindowState _windowState;
         #endregion
         #region properties
@@ -185,6 +183,8 @@ namespace barcode_gen
                 OnPropertyChanged(nameof(HeightCanvas));
             }
         }
+        public Config ConfingItems { get; set; }
+        public Config SelectedConfigItem { get; set;  }
         public double WidthConstructorContainer
         {
             get => _widthConstructorContainer;
@@ -250,31 +250,137 @@ namespace barcode_gen
             }
 
         }
+        public double PrevWidthCanvas { get; set; } = 0;
+        public double PrevHeightCanvas { get; set; } = 0;
         #endregion
         #region command
         public ICommand AddBlockCommand { get; }
+        public ICommand SelectConfigCommand { get; }
+        public ICommand AddConfigCommand { get; }
+        public ICommand CloseConfigDialogCommand { get; }
+        public ICommand AddingConfigCommand { get; }
         #endregion
         #region ctor
-        public MainViewModel(Canvas canvas)
+        public MainViewModel(Canvas canvas, Popup popup)
         {
             AddBlockCommand = new RelayCommand(AddBlock);
+            /*SelectConfigCommand = new RelayCommand(AddConfig);*/
+            AddConfigCommand = new RelayCommand(AddConfig);
+            AddingConfigCommand = new RelayCommand(AddingConfig);
+            CloseConfigDialogCommand = new RelayCommand(CloseConfigDialog);
             _canvas = canvas;
+            _popup = popup;
         }
         #endregion
         #region methods
-      
+
+        public void ChangeSize(double width, double height, double prevWidth, double prevHeight)
+        {
+            /*  if (Blocks.Count == 0)
+                  return;
+
+
+
+
+              double scaleX = WidthCanvas / PrevWidthCanvas;
+              double scaleY = HeightCanvas / PrevHeightCanvas;
+
+              foreach (var block in Blocks)
+              {
+                  var fe = (FrameworkElement)block.Border;
+
+                  RotateTransform rt;
+
+                  if (fe.RenderTransform is RotateTransform existing)
+                  {
+                      rt = existing; // 🔥 ВАЖНО
+                  }
+                  else
+                  {
+                      rt = new RotateTransform(0);
+                      fe.RenderTransform = rt;
+                      fe.RenderTransformOrigin = new Point(0.5, 0.5);
+                  }
+                  block.Angel = rt.Angle;
+                  var border = block.Border;
+                  var topLeftX = Canvas.GetLeft(border);
+                  var topLeftY = Canvas.GetTop(border);
+                  var cX = topLeftX + (block.W / 2);
+                  var cY = topLeftY + (block.H / 2);
+                  // 1) Масштабируем центр фигуры
+                  block.X *= scaleX;
+                  block.Y *= scaleY;
+
+                  // 2) Масштабируем ЛОГИЧЕСКИЕ размеры
+                  block.W *= scaleX;
+                  block.H *= scaleY;
+
+
+                  border.Width = block.W;
+                  border.Height = block.H;
+
+                  Canvas.SetLeft(border, block.X - block.W / 2);
+                  Canvas.SetTop(border, block.Y - block.H / 2);
+
+                  border.RenderTransform = new RotateTransform(block.Angel);
+                  border.RenderTransformOrigin = new Point(0.5, 0.5);
+              }
+
+              PrevWidthCanvas = WidthCanvas;
+              PrevHeightCanvas = HeightCanvas;*/
+
+            if (Blocks.Count == 0)//TODO сделать рабочее маштибирование для повернутых объектов. Ширина в высоту перетекает и обратно.
+                return;
+
+
+
+
+            var proportionWidth = WidthCanvas / PrevWidthCanvas;
+            var proportionHeight = HeightCanvas / PrevHeightCanvas;
+            foreach (var block in Blocks)
+            {
+                var border = block.Border;
+                var topLeftX = Canvas.GetLeft(border);
+                var topLeftY = Canvas.GetTop(border);
+                var wi = border.Width;
+                var wiA = border.ActualWidth;
+                var he = border.Height;
+                var heA = border.ActualHeight;
+                var cX = topLeftX + (border.ActualWidth / 2);
+                var cY = topLeftY + (border.ActualHeight / 2);
+                var newCX = cX * proportionWidth;
+                var newCY = cY * proportionHeight;
+                var newBorderWidth = border.ActualWidth * proportionWidth;
+                var newBorderHeight = border.ActualHeight * proportionHeight;
+                var resultX = newCX - (newBorderWidth / 2);
+                var resultY = newCY - (newBorderHeight / 2);
+
+
+
+
+                border.Width = newBorderWidth;
+                border.Height = newBorderHeight;
+                Canvas.SetLeft(border, resultX);
+                Canvas.SetTop(border, resultY);
+            }
+
+            PrevWidthCanvas = WidthCanvas;
+            PrevHeightCanvas = HeightCanvas;
+        }
         private void AddBlock()
         {
 
             #region adding Block element
             var border = new Border
             {
-                Width = 100,
-                Height = 50,
-                Background = Brushes.Blue,
+                Width = 125,
+                Height = 75,
+                Background = Brushes.MediumSlateBlue,
+                BorderBrush = Brushes.Red,
+                BorderThickness = new Thickness(1),
                 Padding = new Thickness(0),
                 Margin = new Thickness(0),
-               
+
             };
 
             border.MouseLeftButtonUp += OnMouseUp;
@@ -286,50 +392,11 @@ namespace barcode_gen
             Canvas.SetTop(border, 33);
 
             // Grid внутри Border
-            var grid = new Grid() { Margin = new Thickness(0), Width = border.Width};
+            var grid = new Grid() { Margin = new Thickness(0)};
             border.Child = grid;
+            var text = new TextBlock() { Text = "Text", VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center};
 
-            // TextBlock
-            /* var textBlock = new TextBlock
-             {
-                 Text = "Block",
-                 HorizontalAlignment = HorizontalAlignment.Left,
-                 VerticalAlignment = VerticalAlignment.Top
-
-             };*/
-            var view = new Viewbox
-            {
-              Margin = new Thickness(0),
-              Width = 100
-            };
-            var borderq = new Border { Background = Brushes.Orange };
-            var img = new Image
-            {
-                Source = new BitmapImage(new Uri("Images/pngwing.png", UriKind.Relative)),
-                
-                Height = 1150,
-                Width = 1000,
-                Margin = new Thickness(0),
-           
-                VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center,
-            };
-            borderq.Child = img;    
-            view.Child = borderq;
-            
-            /*var img = new Image
-            {
-                Source = new BitmapImage(new Uri("Images/qr.png", UriKind.Relative)),
-                Width = 75,
-                Height = 75,
-                Margin = new Thickness(0),
-                VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Stretch = Stretch.Fill,
-            };*/
-            grid.Children.Add(view);
-
-            
+            grid.Children.Add(text);
             #region thumb
             var thumb = new Thumb
             {
@@ -353,10 +420,19 @@ namespace barcode_gen
                 var elementLeft = Canvas.GetLeft(border);
                 var elementTop = Canvas.GetTop(border);
 
+                if (newWidth < 30) {
+                    target.Width = 30;
+                    return;
+                }
+                if (newHeigth < 20)
+                {
+                    target.Height = 20;
+                    return;
+                }
 
 
 
-                if (newWidth > 10 && e.HorizontalChange < 5|| newHeigth > 10 &&  e.VerticalChange < 5)
+                if ( e.HorizontalChange < 5 ||   e.VerticalChange < 5 )
                 {
                     target.Width = newWidth;
                     target.Height = newHeigth;
@@ -401,8 +477,25 @@ namespace barcode_gen
             grid.Children.Add(thumb);
             _canvas.Children.Add(border);
             #endregion
-            
-            Blocks.Add(new BlockViewModel(RemoveBlock, border));
+            var newVm = new BlockViewModel(RemoveBlock, border, text);
+            newVm.H = 75;
+            newVm.W = 125;
+            newVm.X = 33 + (125 / 2);
+            newVm.Y = 33 + (75 / 2);
+            newVm.Angel = 0;
+            Blocks.Add(newVm);
+        }
+        private void AddConfig()
+        {
+            _popup.IsOpen = true;
+        }
+        private void AddingConfig()
+        {
+            _popup.IsOpen = false;
+        }
+        private void CloseConfigDialog()
+        {
+            _popup.IsOpen = false;
         }
         private void RemoveBlock(BlockViewModel block)
         {

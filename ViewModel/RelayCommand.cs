@@ -11,6 +11,7 @@ namespace barcode_gen
     {
         private readonly Action _execute;
         private readonly Action<MouseButtonEventArgs> _executePressing;
+
         private readonly Func<object, bool> _canExecute;
 
         public RelayCommand(Action execute)
@@ -29,8 +30,9 @@ namespace barcode_gen
             _canExecute = canExecute;
 
         }
-        
-        
+
+
+
 
 
         public bool CanExecute(object parameter)
@@ -38,6 +40,7 @@ namespace barcode_gen
 
         public void Execute(object parameter)
             => _execute();
+
 
         public event EventHandler CanExecuteChanged;
 

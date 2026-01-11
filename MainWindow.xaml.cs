@@ -1,40 +1,89 @@
-﻿using DocumentFormat.OpenXml.InkML;
+﻿using barcode_gen.Enum;
+using barcode_gen.Fonts.Resolvers;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using PdfSharp.Drawing;
+using PdfSharp.Fonts;
 using PdfSharp.Pdf;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
+using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using ZXing;
 using ZXing.Common;
 using ZXing.OneD;
 using ZXing.QrCode;
+using static barcode_gen.MainWindow;
 using Canvas = System.Windows.Controls.Canvas;
 
 namespace barcode_gen
 {
+    public class RotatedLabelElement : LabelElement
+    {
+        public double Angel { get; set; }
+        public System.Drawing.Point RotatedStartPoint { get; set; }
+        public System.Drawing.Point CenterPoint { get; set; }
 
+    }
+    public class Config
+    {
+        public List<Block> Blocks { get; set; } = new List<Block>();
+    }
     /// <summary>
     /// Логика взаимодействия для MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
+        public Config config { get; set; }
+        public MainViewModel viewModel;
         public MainWindow()
         {
             InitializeComponent();
+            foreach (var name in Assembly.GetExecutingAssembly().GetManifestResourceNames())
+            {
+                Console.WriteLine(name);
+            }
+            GlobalFontSettings.FontResolver = new CustomFontResolver();
             var canvas = FieldCanvas;
-            var vm = new MainViewModel(FieldCanvas);
+            var vm = new MainViewModel(FieldCanvas, ConfigPopup);
             DataContext = vm;
+            viewModel = vm;
+            config = LoadConfig();
         }
+        public static Config LoadConfig()
+        {
+            string path = "config.json";
 
+            // Файл отсутствует → создаём новый конфиг
+            if (!File.Exists(path))
+            {
+                var defaultConfig = new Config
+                {
+                    Blocks = new List<Block>() // пустая коллекция
+                };
+
+                // Сохраняем файл
+                var json = JsonSerializer.Serialize(defaultConfig,
+                    new JsonSerializerOptions { WriteIndented = true });
+
+                File.WriteAllText(path, json);
+
+                return defaultConfig;
+            }
+
+            // Если файл есть → читаем его
+            var text = File.ReadAllText(path);
+            return JsonSerializer.Deserialize<Config>(text);
+        }
         #region event methods
         private void Button_Click(object sender, RoutedEventArgs e)
         {
@@ -120,6 +169,16 @@ namespace barcode_gen
             }
             return (0, 0);
         }
+        private (int weigth, int height) getSizeOfLabelForPrint(Mode mode)
+        {
+            switch (mode)
+            {
+                case Mode.Small: return (60, 40);
+                case Mode.Large: return (100, 70);
+                default: return (0, 0);
+            }
+
+        }
         private string[] GetData(MainWindow mainWindow)
         {
             var data = this.TBData.Text.Split("\r\n".ToCharArray());
@@ -127,81 +186,179 @@ namespace barcode_gen
         }
         public void SaveBitmapToFile(string[] dataList, string curDirectory, int labelWidth, int labelHeight, BarcodeFormat type)
         {
-            List<LabelElement> labels = new List<LabelElement> {
-                new LabelElement
+            var contents = viewModel.Blocks
+                .Select((block) => block.ContentData).ToList();
+            if (contents.Count() == 0)
+                return;
+
+
+            (int width, int height) sizes = getSizeOfLabelForPrint(viewModel.SelectedMode);
+            var proportionWidth = sizes.width / viewModel.WidthCanvas;
+            var proportionHeight = sizes.height / viewModel.HeightCanvas;
+            var queue = new Queue<String>();
+            var data = new List<List<RotatedLabelElement>>();
+            for (int i = 0; i < contents.First().Count; i++)
+            {
+                queue = new Queue<string>();
+                for (int j = 0; j < contents.Count(); j++)
                 {
-                    Value = "ABC123",
-                    X = 5,
-                    Y = 5,
-                    Width = 50,
-                    Height = 30,
-                    Kind = BarcodeFormat.CODE_128,
-                    Text = "Товар 1"
-                },
-                new LabelElement
-                {
-                    Value = "XYZ456",
-                    X = 5,
-                    Y = 5,
-                    Width = 50,
-                    Height = 30,
-                    Kind = BarcodeFormat.CODE_128,
-                    Text = "Товар 2"
-                },
-                new LabelElement
-                {
-                    Value = "111222",
-                    X = 5,
-                    Y = 5,
-                    Width = 50,
-                    Height = 30,
-                    Kind = BarcodeFormat.CODE_128,
-                    Text = "Штрихкод"
+                    queue.Enqueue(contents[j][i]);
                 }
-            };
-            SaveLabelsToPdf(labels, "C:\\Users\\Work\\Pictures\\lable.pdf");
+                data.Add(CreateLabels(proportionWidth, proportionHeight, queue));
+            }
+            //Надо склеить данные, перебрать блоки
+            if (data.Count == 0)
+                return;
+            SaveLabelsToPdf(data, "C:\\Users\\Work\\Pictures\\lable.pdf");
+
         }
-        public void SaveLabelsToPdf(List<LabelElement> labels, string path)
+        private List<RotatedLabelElement> CreateLabels(double proportionWidth, double proportionHeight, Queue<string> values)
+        {
+            var labels = new List<RotatedLabelElement>();
+            foreach (var block in viewModel.Blocks)
+            {
+                
+                var border = block.Border;
+                var topLeftX = Canvas.GetLeft(border);
+                var topLeftY = Canvas.GetTop(border);
+                var wi = border.Width;
+                var wiA = border.ActualWidth;
+                var he = border.Height;
+                var heA = border.ActualHeight;
+                var cX = topLeftX + (border.ActualWidth / 2);
+                var cY = topLeftY + (border.ActualHeight / 2);
+                var newCX = cX * proportionWidth;
+                var newCY = cY * proportionHeight;
+                var newBorderWidth = border.ActualWidth * proportionWidth;
+                var newBorderHeight = border.ActualHeight * proportionHeight;
+                var resultX = newCX - (newBorderWidth / 2);
+                var resultY = newCY - (newBorderHeight / 2);
+
+                GeneralTransform transform = border.TransformToAncestor(FieldCanvas);
+                Rect bounds = transform.TransformBounds(new Rect(
+                    0,
+                    0,
+                    border.RenderSize.Width,
+                    border.RenderSize.Height));
+
+                var fe = (FrameworkElement)border;
+
+                RotateTransform rt = new RotateTransform(0);
+
+                if (fe.RenderTransform is RotateTransform existing)
+                {
+                    rt = existing; // 🔥 ВАЖНО
+                }
+
+                //надо центр новой фигуры, угол поворота и точка начала с учетом поворота
+                labels.Add(new RotatedLabelElement
+                {
+                    Value = values.Dequeue(),
+                    X = (int)resultX,
+                    Y = (int)resultY == 0 ? 1 : (int)resultY,
+                    Width = (int)newBorderWidth,
+                    Height = (int)newBorderHeight,
+                    Kind = ConvertElementTypesToBarcodeFormat(block.SelectedType),
+                    CenterPoint = new System.Drawing.Point((int)newCX, (int)newCY),
+                    Angel = rt.Angle,
+                    RotatedStartPoint = new System.Drawing.Point((int)(bounds.BottomLeft.X * proportionWidth), (int)(bounds.BottomLeft.Y * proportionHeight))
+                });
+            }
+
+            return labels;
+        }
+        public void SaveLabelsToPdf(List<List<RotatedLabelElement>> labels, string path)
         {
             PdfDocument doc = new PdfDocument();
-
-            foreach (var label in labels)
+            foreach (var bunchOfLabels in labels)
             {
-                // создаём новую страницу
                 PdfPage page = doc.AddPage();
-
-                // можно настроить размер страницы под наклейку
-                page.Width = 60;   // в пунктов (примерно px)
-                page.Height = 40;
-
+                (int width, int height) sizes = getSizeOfLabelForPrint(viewModel.SelectedMode);
+                page.Width = sizes.width;   // в пунктов (примерно px)
+                page.Height = sizes.height;
                 XGraphics gfx = XGraphics.FromPdfPage(page);
 
-                // генерируем штрих-код
-                Bitmap bmp = BarcodeRenderer.Render(label.Kind, label.Value, 60, 40);
-
-                // сохраняем Bitmap в поток
-                using (var ms = new MemoryStream())
+                foreach (var label in bunchOfLabels)
                 {
-                    bmp.Save(ms, ImageFormat.Png);
-                    ms.Position = 0;
 
-                    XImage xImg = XImage.FromStream(ms);
-                    gfx.DrawImage(xImg, label.X, label.Y, label.Width, label.Height); // рисуем на всю страницу
+                    if (label.Kind != BarcodeFormat.ITF)
+                    {
+                        Bitmap bmp = BarcodeRenderer.Render(label.Kind, label.Value, 250, 100);
+                        bmp.SetResolution(200, 200);
+                        // сохраняем Bitmap в поток
+                        using (var ms = new MemoryStream())
+                        {
+                            bmp.Save(ms, ImageFormat.Png);
+                            ms.Position = 0;
+
+                            XImage xImg = XImage.FromStream(ms);
+
+                            if (label.Angel != 0)
+                            {
+                                var state = gfx.Save();
+                                gfx.TranslateTransform(label.CenterPoint.X, label.CenterPoint.Y);
+                                gfx.RotateTransform(label.Angel);
+                                gfx.TranslateTransform(-label.Width / 3, -label.Height * 1.2);
+                                gfx.DrawImage(xImg, label.X, label.Y, label.Width, label.Height);
+                                gfx.Restore(state);
+                            }
+                            else
+                            {
+                                gfx.DrawImage(xImg, label.X, label.Y, label.Width, label.Height);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(label.Value))
+                        {
+                            var font = new XFont("Times New Roman", 5);
+                            var widthOnOneSign = 2.5;
+                            var singsInOneLine = (int)(label.Width / widthOnOneSign);
+                            var lines = new List<string>();
+                            double lineHeight = font.GetHeight();
+                            String temp = "";
+                            int counter = 0;
+                            for (int i = 0; i < label.Value.Length; i++, counter++)
+                            {
+                                temp += label.Value[i];
+                                if (counter == singsInOneLine - 1)
+                                {
+                                    lines.Add($"{temp}");
+                                    counter = 0;
+                                    temp = "";
+                                }
+                            }
+                            lines.Add($"{temp}");
+
+                            for (int i = 0; i < lines.Count; i++)
+                            {
+                                gfx.DrawString(lines[i],
+                                    font,
+                                    XBrushes.Black,
+                                    new XRect(label.X, label.Y + i * lineHeight, label.Width, label.Height),
+                                    XStringFormats.TopLeft);
+                            }
+                        }
+
+                    }
                 }
-
-                // опционально добавить текст
-                /* if (!string.IsNullOrEmpty(label.Text))
-                 {
-                     gfx.DrawString(label.Text,
-                         new XFont("Arial", 12),
-                         XBrushes.Black,
-                         new XRect(0, label.Height - 20, label.Width, 20),
-                         XStringFormats.Center);
-                 }*/
             }
 
             // сохраняем PDF
             doc.Save(path);
+        }
+        public BarcodeFormat ConvertElementTypesToBarcodeFormat(ElementTypes type)
+        {
+            switch (type)
+            {
+                case ElementTypes.Text:  return BarcodeFormat.ITF;
+                case ElementTypes.Code128 : return BarcodeFormat.CODE_128;
+                case ElementTypes.QrCode: return BarcodeFormat.QR_CODE;
+                case ElementTypes.Matrix: return BarcodeFormat.DATA_MATRIX;
+                default: return BarcodeFormat.ITF;
+
+            }
         }
         #endregion
         public class LabelElement
@@ -245,7 +402,9 @@ namespace barcode_gen
                         Height = h,
                         Margin = 0,
                         ErrorCorrection = ZXing.QrCode.Internal.ErrorCorrectionLevel.M
+
                     }
+
                 };
                 return writer.Write(value);
             }
@@ -299,110 +458,15 @@ namespace barcode_gen
                 }
             }
         }
-        #region dnd
-       /* private void TextBlock_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            isDragging = true;
-            lastPos = e.GetPosition(LabelCanvas);
-            ((UIElement)sender).CaptureMouse();
+            (DataContext as MainViewModel)?
+                .ChangeSize(e.NewSize.Width, e.NewSize.Height, e.PreviousSize.Width, e.PreviousSize.Height);
         }
-
-        private void TextBlock_MouseMove(object sender, MouseEventArgs e)
+        private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-
-            if (!isDragging) return;
-
-            var element = (UIElement)sender;
-            var pos = e.GetPosition(LabelCanvas);
-            var elementLeft = System.Windows.Controls.Canvas.GetLeft(element) + lastPos.X;
-            var elementTop = System.Windows.Controls.Canvas.GetTop(element) + lastPos.Y;
-            var dx = pos.X - lastPos.X;
-            var dy = pos.Y - lastPos.Y;
-            var leftX = pos.X;
-            var rightX = pos.X + LabelCanvas.ActualWidth;
-            var topY = pos.Y;
-            var downY = pos.Y + LabelCanvas.ActualHeight;
-            #region shifting 
-            if (topY < (elementTop + dy) && downY > (elementTop + element.DesiredSize.Height + dy))
-            {
-                System.Windows.Controls.Canvas.SetTop(element, Canvas.GetTop(element) + dy);
-            }
-            else
-            {
-                if (topY >= (elementTop + dy))
-                {
-                    Canvas.SetTop(element, Canvas.GetTop(element) + 1);
-                }
-                else
-                {
-                    Canvas.SetTop(element, Canvas.GetTop(element) - 1);
-                }
-            }
-            if (leftX < (elementLeft + dx) && rightX > (elementLeft + element.DesiredSize.Width + dx))
-            {
-                Canvas.SetLeft(element, Canvas.GetLeft(element) + dx);
-            }
-            else
-            {
-                if (leftX >= (elementLeft + dx))
-                {
-                    Canvas.SetLeft(element, Canvas.GetLeft(element) + 1);
-                }
-                else
-                {
-                    Canvas.SetLeft(element, Canvas.GetLeft(element) - 1);
-                }
-            }
-            #endregion
-            lastPos = pos;
-            //Console.WriteLine($"canvas: {leftX}:{rightX} {topY}:{downY}");
-            //Console.WriteLine($"element: {Canvas.GetLeft(element)}:{Canvas.GetTop(element)}");
-        }
-
-        private void TextBlock_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            isDragging = false;
-            ((UIElement)sender).ReleaseMouseCapture();
-        }*/
-
-        #endregion
-
-        private void Thumb_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
-        {
-            /*var border = ResizableBorder;
-            //var text = TextBoxD;
-            var element = (UIElement)sender;
-            Rect bounds = VisualTreeHelper.GetDescendantBounds(element);
-            GeneralTransform transform =
-                element.TransformToAncestor(LabelCanvas);
-            Rect transformedBounds = transform.TransformBounds(bounds);
-            System.Windows.Point realLeft = transformedBounds.TopLeft;
-
-            double newWidth = border.ActualWidth + e.HorizontalChange;
-            double newHeight = border.ActualHeight + e.VerticalChange;
-            if (border.ActualHeight + e.VerticalChange > 20)
-            {
-                border.Height = newHeight;
-            }
-            if (border.ActualWidth + e.HorizontalChange > 30)
-            {
-                border.Width = newWidth;
-            }*/
-        }
-
-        private void TextBlock_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-
-        }
-
-        private void TextBlock_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-
-        }
-
-        private void TextBlock_MouseMove(object sender, MouseEventArgs e)
-        {
-
+            viewModel.PrevWidthCanvas = FieldCanvas.ActualWidth;// Нужен для того чтобы обрабатывать событие изменения основного окна и маштабирования элементов в конструкторе
+            viewModel.PrevHeightCanvas = FieldCanvas.ActualHeight;
         }
     }
 }
