@@ -124,7 +124,6 @@ namespace barcode_gen
     public partial class MainWindow : Window
     {
         #region Properties
-        public Config config { get; set; }
         public MainViewModel viewModel;
         #endregion
         #region ctor
@@ -136,33 +135,19 @@ namespace barcode_gen
             var vm = new MainViewModel(FieldCanvas, ConfigPopup);
             DataContext = vm;
             viewModel = vm;
-            config = LoadConfig();
+            vm.RightViewModel.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(vm.RightViewModel.WidthContainer))
+                    this.Width = vm.RightViewModel.WidthContainer;
+
+                if (e.PropertyName == nameof(vm.RightViewModel.HeightContainer))
+                    this.Height = vm.RightViewModel.HeightContainer;
+            };//не работает binding через свойство класса и приходится так делать
+
         }
         #endregion
         #region I/O region
-        public static Config LoadConfig()
-        {
-            string path = "config.json";
-
-            if (!File.Exists(path))
-            {
-                var defaultConfig = new Config
-                {
-                    Configs = new List<ConfigItem>() 
-                };
-
-                // Сохраняем файл
-                var json = JsonSerializer.Serialize(defaultConfig,
-                    new JsonSerializerOptions { WriteIndented = true });
-
-                File.WriteAllText(path, json);
-
-                return defaultConfig;
-            }
-
-            var text = File.ReadAllText(path);
-            return JsonSerializer.Deserialize<Config>(text);
-        }
+       
         public void SaveLabelsToPdf(List<List<RotatedLabelElement>> labels, string path)
         {
             PdfDocument doc = new PdfDocument();

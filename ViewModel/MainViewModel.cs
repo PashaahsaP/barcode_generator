@@ -185,7 +185,7 @@ namespace barcode_gen
         public MainViewModel(Canvas canvas, Popup popup)
         {
             SharedState = new SharedState();
-            RightViewModel = new RightViewModel(SharedState);
+            RightViewModel = new RightViewModel(SharedState, popup);
             LeftViewModel = new LeftViewModel(SharedState, canvas);
             CenterViewModel = new CenterViewModel();
         }

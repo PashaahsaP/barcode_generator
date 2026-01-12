@@ -18,13 +18,27 @@ namespace barcode_gen.ViewModel
         #region varible
         private Popup _popup;
         private Mode _selectedMode = Mode.Large;
-
+        private double _heightContainer = 450;
+        private double _widthContainer = 800;
         #endregion
         #region properties
+        public double WidthContainer
+        {
+            get => _widthContainer; set
+            {
+                _widthContainer = value;
+                OnPropertyChanged(nameof(WidthContainer));
+            }
+        }
+        public double HeightContainer
+        {
+            get => _heightContainer; set
+            {
+                _heightContainer = value;
+                OnPropertyChanged(nameof(HeightContainer));
+            }
+        }
         public string ConfigName { get; set; } = string.Empty;
-        public string SelectedConfigItemName { get; set; }
-
-
         public Mode SelectedMode
         {
             get => _selectedMode;
@@ -49,18 +63,31 @@ namespace barcode_gen.ViewModel
                 OnPropertyChanged(nameof(SharedState.HeightCanvas));
             }
         }
-        public List<string> ConfingItemNames { get; set; }
+        public Config Config { get; set; }
+        public List<ConfigItem> Configs { get; set; } = new List<ConfigItem>();
+        public ConfigItem SelectedConfig { get; set; }
 
         public SharedState SharedState { get; }
         #endregion
         #region ctor
-        public RightViewModel(SharedState sharedState)
+        public RightViewModel(SharedState sharedState, Popup popup)
         {
             SharedState = sharedState;
             AddConfigCommand = new RelayCommand(AddConfig);
             AddingConfigCommand = new RelayCommand(AddingConfig);
             CloseConfigDialogCommand = new RelayCommand(CloseConfigDialog);
+            SelectConfigCommand = new RelayCommand(() =>
+                DisplaySelectedConfig(SelectedConfig)
+            );
 
+            _popup = popup;
+            Config = LoadConfig();
+        }
+
+        private void DisplaySelectedConfig(ConfigItem selectedConfig)
+        {
+            HeightContainer = 100;
+            WidthContainer = 100;
         }
         #endregion
         #region command
@@ -79,17 +106,15 @@ namespace barcode_gen.ViewModel
         private void AddingConfig()
         {
             _popup.IsOpen = false;
-            var conf = new Config()
-            {
-                Configs =
-                {
-                    new ConfigItem(){
-                        Blocks = SharedState.Blocks.Select(item => new BlockItem(item)).ToList(),
-                        Name = ConfigName
-                    }
-                }
-            };
-            SaveConfig(conf);
+            Config.Configs.Add(
+                 new ConfigItem()
+                 {
+                     Blocks = SharedState.Blocks.Select(item => new BlockItem(item)).ToList(),
+                     Name = ConfigName
+                 }
+                );
+            
+            SaveConfig(Config);
 
 
         }
@@ -97,7 +122,31 @@ namespace barcode_gen.ViewModel
         {
             _popup.IsOpen = false;
         }
+        public  Config LoadConfig()
+        {
+            string path = "config.json";
 
+            if (!File.Exists(path))
+            {
+                var defaultConfig = new Config
+                {
+                    Configs = new List<ConfigItem>()
+                };
+
+                // Сохраняем файл
+                var json = JsonSerializer.Serialize(defaultConfig,
+                    new JsonSerializerOptions { WriteIndented = true });
+
+                File.WriteAllText(path, json);
+
+                return defaultConfig;
+            }
+
+            var text = File.ReadAllText(path);
+            var config = JsonSerializer.Deserialize<Config>(text);
+            Configs = config.Configs;
+            return config;
+        }
         public static void SaveConfig(Config config)
         {
             string json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });

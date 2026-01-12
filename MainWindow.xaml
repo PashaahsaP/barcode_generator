@@ -9,18 +9,22 @@
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:local="clr-namespace:barcode_gen"
         
-        Width="{Binding WidthConstructorContainer, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, FallbackValue=800}"
-        Height="{Binding HeightConstructorContainer, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, FallbackValue=450}"
+        Width="{Binding DataContext.RightViewModel.WidthContainer, 
+                    RelativeSource={RelativeSource Self}, 
+                    Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+    Height="{Binding DataContext.RightViewModel.HeightContainer, 
+                     RelativeSource={RelativeSource Self}, 
+                     Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
         SizeChanged="Window_SizeChanged"
         Loaded="Window_Loaded"
         >
-    
+  <!--
     <i:Interaction.Behaviors>
         <local:WindowActualSizeBehavior
         Width="{Binding WidthConstructorContainer, Mode=OneWayToSource}"
         Height="{Binding HeightConstructorContainer, Mode=OneWayToSource}" />
     </i:Interaction.Behaviors>
-
+-->
     <Window.Resources>
             <ResourceDictionary>
                 <ResourceDictionary.MergedDictionaries>
@@ -676,18 +680,20 @@
                             Grid.ColumnSpan="2" 
                             Orientation="Horizontal">
                     <ComboBox 
-                        ItemsSource="{Binding RightViewModel.ConfingItemNames}"
+                        ItemsSource="{Binding RightViewModel.Configs}"
                         Width="123"
                         Margin="0 0 5 0"
                         SelectedIndex="0"
                         Grid.Column="0"
                         Grid.Row="0"
-                        SelectedItem="{Binding RightViewModel.SelectedConfigItemName}"
+                        SelectedItem="{Binding RightViewModel.SelectedConfig}"
+                        DisplayMemberPath="Name"
+                        SelectedValuePath="Name"
                         Style="{DynamicResource BaseComboBox}">
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="SelectionChanged">
                                 <i:InvokeCommandAction Command="{Binding RightViewModel.SelectConfigCommand}"
-                                CommandParameter="{Binding RightViewModel.SelectedConfigItemName, RelativeSource={RelativeSource AncestorType=ComboBox}}"/>
+                                CommandParameter="{Binding RightViewModel.SelectedConfigs, RelativeSource={RelativeSource AncestorType=ComboBox}}"/>
                             </i:EventTrigger>
                         </i:Interaction.Triggers>
                     </ComboBox>

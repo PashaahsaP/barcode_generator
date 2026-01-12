@@ -39,5 +39,27 @@ namespace barcode_gen
             Angel = vm.Angel;
             SelectedType = vm.SelectedType;
         }
+        public BlockItem()
+        {
+            
+        }
+        public BlockItem(int blockTop, int blockLeft, int linesCount, string textBoxState, string content, string title, double x, double y, double h, double w, double mainWidth, double mainHeight, double angel, Visibility visibility, ElementTypes selectedType)
+        {
+            BlockTop = blockTop;
+            BlockLeft = blockLeft;
+            LinesCount = linesCount;
+            TextBoxState = textBoxState;
+            Content = content;
+            Title = title;
+            X = x;
+            Y = y;
+            H = h;
+            W = w;
+            this.mainWidth = mainWidth;
+            this.mainHeight = mainHeight;
+            Angel = angel;
+            Visibility = visibility;
+            SelectedType = selectedType;
+        }
     }
 }
