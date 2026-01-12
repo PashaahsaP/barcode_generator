@@ -1,0 +1,78 @@
+## Build results
+bin/
+obj/
+[Bb]uild/
+[Ll]og/
+artifacts/
+
+## VS / VS Code
+.vs/
+.vscode/
+
+## User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Backup & caches
+*_i.c
+*_p.c
+*.cache
+*.wixproj.bindings
+*.wixproj.cache
+*.dbmdl
+
+## Test results
+TestResult*/
+*.tests.csproj.user
+
+## NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+# except if you use package reference (default in new projects)
+!**/packages/build/
+project.lock.json
+project.assets.json
+
+## Logs
+*.log
+
+## MSBuild
+msbuild.log
+msbuild.err
+msbuild.wrn
+
+## Publish output
+publish/
+app.publish/
+
+## Rider / ReSharper
+.idea/
+*.DotSettings.user
+_ReSharper*/
+*.[Rr]e[Ss]harper
+
+## Generated files
+*.g.cs
+*.g.i.cs
+*.Designer.cs
+
+## WPF specific
+*.pdb
+*.cachefile
+App.g.*
+MainWindow.g.*
+Properties/AssemblyInfo.cs.bak
+
+## Others
+*.tmp
+*.temp
+~$*
+*.bak
+*.orig
+*.swp
+*.DS_Store
+Thumbs.db
