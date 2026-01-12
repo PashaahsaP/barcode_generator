@@ -169,7 +169,7 @@ namespace barcode_gen
             foreach (var bunchOfLabels in labels)
             {
                 PdfPage page = doc.AddPage();
-                (int width, int height) sizes = getSizeOfLabelForPrint(viewModel.SelectedMode);
+                (int width, int height) sizes = getSizeOfLabelForPrint(viewModel.RightViewModel.SelectedMode);
                 page.Width = sizes.width;   // в пунктов (примерно px)
                 page.Height = sizes.height;
                 XGraphics gfx = XGraphics.FromPdfPage(page);
@@ -256,7 +256,7 @@ namespace barcode_gen
             (DataContext as MainViewModel)?
                 .ChangeSize();
 
-            foreach (var item in viewModel.Blocks)
+            foreach (var item in viewModel.SharedState.Blocks)
             {
                 item.mainHeight = e.NewSize.Height;
                 item.mainWidth = e.NewSize.Width;
@@ -295,15 +295,15 @@ namespace barcode_gen
 
         public void GetDataFromLeftSideFields() //refac 12.01
         {
-            var contents = viewModel.Blocks// If isn't data in left
+            var contents = viewModel.SharedState.Blocks// If isn't data in left
                 .Select((block) => block.ContentData).ToList();
             if (contents.Count() == 0)
                 return;
 
 
-            (int width, int height) sizes = getSizeOfLabelForPrint(viewModel.SelectedMode);
-            var proportionWidth = sizes.width / viewModel.WidthCanvas;
-            var proportionHeight = sizes.height / viewModel.HeightCanvas;
+            (int width, int height) sizes = getSizeOfLabelForPrint(viewModel.RightViewModel.SelectedMode);
+            var proportionWidth = sizes.width / viewModel.SharedState.WidthCanvas;
+            var proportionHeight = sizes.height / viewModel.SharedState.HeightCanvas;
             var queue = new Queue<String>();
             var data = new List<List<RotatedLabelElement>>();
             for (int i = 0; i < contents.First().Count; i++)
@@ -324,7 +324,7 @@ namespace barcode_gen
         private List<RotatedLabelElement> CreateLabels(double proportionWidth, double proportionHeight, Queue<string> values)
         {
             var labels = new List<RotatedLabelElement>();
-            foreach (var block in viewModel.Blocks)
+            foreach (var block in viewModel.SharedState.Blocks)
             {
                 
                 var border = block.Border;

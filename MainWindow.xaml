@@ -399,12 +399,12 @@
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
                 <Button  
-                    Command="{Binding AddBlockCommand}"
+                    Command="{Binding LeftViewModel.AddBlockCommand}"
                     Template="{DynamicResource ButtonTemplate1}"
                     Margin="3"> Добавить </Button>
             </Grid>
             <Grid Grid.Row="1">
-                <ItemsControl   ItemsSource="{Binding Blocks}">
+                <ItemsControl   ItemsSource="{Binding SharedState.Blocks}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Border CornerRadius="5" 
@@ -635,12 +635,12 @@
                 CornerRadius="5"
                 BorderBrush="Black"
                 BorderThickness="1"
-                Width="{Binding WidthBorder}"
-                Height="{Binding HeightBorder}">
+                Width="{Binding SharedState.WidthBorder}"
+                Height="{Binding SharedState.HeightBorder}">
                 <Canvas x:Name="FieldCanvas"
                     Background="LightGray"
-                    Width="{Binding WidthCanvas}"
-                    Height="{Binding HeightCanvas}">
+                    Width="{Binding SharedState.WidthCanvas}"
+                    Height="{Binding SharedState.HeightCanvas}">
                 </Canvas>
             </Border>
 
@@ -661,14 +661,14 @@
                 <RadioButton 
                     Grid.Column="0" GroupName="Label"
                     Content="Маленькая"
-                    IsChecked="{Binding SelectedMode,
+                    IsChecked="{Binding RightViewModel.SelectedMode,
                              Converter={StaticResource EnumToBoolConverter},
                              ConverterParameter=Small}" />
 
                 <RadioButton 
                     Grid.Column="1" GroupName="Label"
                     Content="Большая"
-                    IsChecked="{Binding SelectedMode,
+                    IsChecked="{Binding RightViewModel.SelectedMode,
                              Converter={StaticResource EnumToBoolConverter},
                              ConverterParameter=Large}" />
                 <StackPanel Grid.Row="1" 
@@ -676,18 +676,18 @@
                             Grid.ColumnSpan="2" 
                             Orientation="Horizontal">
                     <ComboBox 
-                        ItemsSource="{Binding ConfingItemNames}"
+                        ItemsSource="{Binding RightViewModel.ConfingItemNames}"
                         Width="123"
                         Margin="0 0 5 0"
                         SelectedIndex="0"
                         Grid.Column="0"
                         Grid.Row="0"
-                        SelectedItem="{Binding SelectedConfigItemName}"
+                        SelectedItem="{Binding RightViewModel.SelectedConfigItemName}"
                         Style="{DynamicResource BaseComboBox}">
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="SelectionChanged">
-                                <i:InvokeCommandAction Command="{Binding SelectConfigCommand}"
-                                CommandParameter="{Binding SelectedConfigItemName, RelativeSource={RelativeSource AncestorType=ComboBox}}"/>
+                                <i:InvokeCommandAction Command="{Binding RightViewModel.SelectConfigCommand}"
+                                CommandParameter="{Binding RightViewModel.SelectedConfigItemName, RelativeSource={RelativeSource AncestorType=ComboBox}}"/>
                             </i:EventTrigger>
                         </i:Interaction.Triggers>
                     </ComboBox>
@@ -695,15 +695,15 @@
                         x:Name="AddButton"
                         Template="{DynamicResource ButtonTemplate1}"
                         Padding="4 0 4 0"
-                        Command ="{Binding AddConfigCommand}">Добавить</Button
+                        Command ="{Binding RightViewModel.AddConfigCommand}">Добавить</Button
                         >
                     <Popup Name="ConfigPopup" StaysOpen="False" PlacementTarget="{Binding ElementName=FieldCanvas}">
                         <Border  Background="White" BorderBrush="Gray" BorderThickness="1" Padding="10">
                             <StackPanel>
                                 <TextBlock Margin="0 0 0 5" Text="Введи название конфига"/>
-                                <TextBox Text="{Binding ConfigName}" Padding="7" Width="150" Margin="0,0,0,5"/>
-                                <Button Padding="3" Command ="{Binding AddingConfigCommand}" Margin="0 0 0 5" Template="{DynamicResource ButtonTemplate1}" Content="OK" Width="60"/>
-                                <Button Padding="3" Command="{Binding CloseConfigDialogCommand}" Template="{DynamicResource ButtonTemplate1}" Content="Отмена" Width="60"/>
+                                <TextBox Text="{Binding RightViewModel.ConfigName}" Padding="7" Width="150" Margin="0,0,0,5"/>
+                                <Button Padding="3" Command ="{Binding RightViewModel.AddingConfigCommand}" Margin="0 0 0 5" Template="{DynamicResource ButtonTemplate1}" Content="OK" Width="60"/>
+                                <Button Padding="3" Command="{Binding RightViewModel.CloseConfigDialogCommand}" Template="{DynamicResource ButtonTemplate1}" Content="Отмена" Width="60"/>
                             </StackPanel>
                         </Border>
                     </Popup>
