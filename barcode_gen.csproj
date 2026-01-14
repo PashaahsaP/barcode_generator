@@ -182,15 +182,23 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ComboBoxCommand.cs" />
+    <Compile Include="DataClasses\BlockItem.cs" />
+    <Compile Include="ViewModel\CenterViewModel.cs" />
+    <Compile Include="ViewModel\ComboBoxCommand.cs" />
+    <Compile Include="DataClasses\ConfigItem.cs" />
+    <Compile Include="DataClasses\Config.cs" />
     <Compile Include="Converter\EnumToBoolConverter.cs" />
     <Compile Include="Enum\ElementTypes.cs" />
     <Compile Include="Enum\Mode.cs" />
     <Compile Include="Fonts\Resolvers\CustomFontResolver.cs" />
-    <Compile Include="InvokeCommandWithElementAction.cs" />
-    <Compile Include="UiEventPayload.cs" />
+    <Compile Include="DataClasses\RotatedLabelElement.cs" />
+    <Compile Include="DataClasses\LabelElement.cs" />
+    <Compile Include="DataClasses\UiEventPayload.cs" />
     <Compile Include="ViewModel\BlockViewModel.cs" />
+    <Compile Include="ViewModel\LeftViewModel.cs" />
     <Compile Include="ViewModel\RelayCommand.cs" />
+    <Compile Include="ViewModel\RightViewModel.cs" />
+    <Compile Include="ViewModel\SharedData.cs" />
     <Compile Include="ViewModel\TicketCommand.cs" />
     <Compile Include="WindowActualSizeBehavior.cs" />
     <Page Include="MainWindow.xaml">
@@ -248,6 +256,7 @@
   <ItemGroup>
     <Resource Include="Images\pngwing.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\SkiaSharp.NativeAssets.macOS.2.88.8\build\net462\SkiaSharp.NativeAssets.macOS.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.macOS.2.88.8\build\net462\SkiaSharp.NativeAssets.macOS.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
