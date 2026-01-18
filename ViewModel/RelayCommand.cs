@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace barcode_gen
@@ -22,8 +18,8 @@ namespace barcode_gen
         {
             _executePressing = execute;
         }
-        public RelayCommand( 
-            Action execute, 
+        public RelayCommand(
+            Action execute,
             Func<object, bool> canExecute = null)
         {
             _execute = execute;

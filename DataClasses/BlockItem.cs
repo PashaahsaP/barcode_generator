@@ -12,12 +12,12 @@ namespace barcode_gen
         public string TextBoxState { get; set; }
         public string Content { get; set; }
         public string Title { get; set; }
-        public double X { get; set; }
-        public double Y { get; set; }
+        public double CX { get; set; }
+        public double CY { get; set; }
         public double H { get; set; }
         public double W { get; set; }
-        public double mainWidth { get; set; }
-        public double mainHeight { get; set; }
+        public double MainWidth { get; set; }
+        public double MainHeight { get; set; }
         public double Angel { get; set; }
         public Visibility Visibility { get; set; }
         public ElementTypes SelectedType { get; set; }
@@ -30,18 +30,18 @@ namespace barcode_gen
             Content = vm.Content;
             Title = vm.Title;
             Visibility = vm.Visibility;
-            X = vm.X;
-            Y = vm.Y;
+            CX = vm.CX;
+            CY = vm.CY;
             H = vm.H;
             W = vm.W;
-            mainHeight = vm.mainHeight;
-            mainWidth = vm.mainWidth;
+            MainHeight = vm.mainHeight;
+            MainWidth = vm.mainWidth;
             Angel = vm.Angel;
-            SelectedType = vm.SelectedType;
+            SelectedType = ElementTypes.Text;
         }
         public BlockItem()
         {
-            
+
         }
         public BlockItem(int blockTop, int blockLeft, int linesCount, string textBoxState, string content, string title, double x, double y, double h, double w, double mainWidth, double mainHeight, double angel, Visibility visibility, ElementTypes selectedType)
         {
@@ -51,12 +51,12 @@ namespace barcode_gen
             TextBoxState = textBoxState;
             Content = content;
             Title = title;
-            X = x;
-            Y = y;
+            CX = x;
+            CY = y;
             H = h;
             W = w;
-            this.mainWidth = mainWidth;
-            this.mainHeight = mainHeight;
+            this.MainWidth = mainWidth;
+            this.MainHeight = mainHeight;
             Angel = angel;
             Visibility = visibility;
             SelectedType = selectedType;

@@ -1,5 +1,4 @@
 ﻿using barcode_gen.Enum;
-using DocumentFormat.OpenXml.Drawing;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -15,7 +14,8 @@ namespace barcode_gen.ViewModel
     public class BlockViewModel : INotifyPropertyChanged
     {
         #region Helper class
-        public class ProportionalPoint {
+        public class ProportionalPoint
+        {
             public double X;
             public double Y;
             public ProportionalPoint(double x, double y)
@@ -31,42 +31,46 @@ namespace barcode_gen.ViewModel
         private Visibility _visibility = Visibility.Collapsed;
         private String _content = string.Empty;
         private List<String> _contentData = new List<string>();
-        private int _blockLeft= 100;
+        private int _blockLeft = 100;
         private int _blockTop = 100;
 
-        
-       
+
+
         #endregion
         #region property
-        public int BlockTop { get => _blockTop; set
+        public int BlockTop
+        {
+            get => _blockTop; set
             {
                 _blockTop = value;
                 OnPropertyChanged();
             }
         }
-        public int BlockLeft { get => _blockLeft; set 
+        public int BlockLeft
+        {
+            get => _blockLeft; set
             {
-                _blockLeft = value; 
+                _blockLeft = value;
                 OnPropertyChanged();
-            } 
+            }
         }
         public int LinesCount { get; set; }
         public string TextBoxState
         {
-            get 
-                {
+            get
+            {
                 if (Visibility == Visibility.Collapsed)
                     return "+";
                 return "-";
             }
-           /* set
-            {
-                if (_textBoxState != value)
-                {
-                    _textBoxState = value;
-                    OnPropertyChanged();
-                }
-            }*/
+            /* set
+             {
+                 if (_textBoxState != value)
+                 {
+                     _textBoxState = value;
+                     OnPropertyChanged();
+                 }
+             }*/
         }
         public string Content
         {
@@ -83,12 +87,12 @@ namespace barcode_gen.ViewModel
             }
         }
         public string Title { get; set; } = "";
-        public double X { get; set; }
-        public double Y { get; set; }
+        public double CX { get; set; }
+        public double CY { get; set; }
         public double H { get; set; }
         public double W { get; set; }
-        public double mainWidth { get; set; }
-        public double mainHeight { get; set; }
+        public double mainWidth { get; set; } = 800;
+        public double mainHeight { get; set; } = 450;
         public double Angel { get; set; }
         public Visibility Visibility
         {
@@ -122,12 +126,12 @@ namespace barcode_gen.ViewModel
             set
             {
                 _contentData = value;
-                     
+
             }
         }
-        public Border Border{ get; set; }
-        public TextBlock Text {  get; set; }
-      
+        public Border Border { get; set; }
+        public TextBlock Text { get; set; }
+
 
 
         #endregion
@@ -135,9 +139,9 @@ namespace barcode_gen.ViewModel
         public ICommand OptionChangedCommand { get; }
         public ICommand RemoveCommand { get; }
         public ICommand SwitchVisibilityCommand { get; }
-        public ICommand MouseDownCommand {  get; }
-        public ICommand MouseUpCommand {  get; }
-        public ICommand MouseMoveCommand {  get; }
+        public ICommand MouseDownCommand { get; }
+        public ICommand MouseUpCommand { get; }
+        public ICommand MouseMoveCommand { get; }
         #endregion
         #region ctor
         public BlockViewModel(Action<BlockViewModel> removeAction, Border border, TextBlock text)
@@ -163,7 +167,7 @@ namespace barcode_gen.ViewModel
                     Visibility = Visibility.Collapsed;
 
             });
-            OptionChangedCommand = new ComboBoxCommand((s) => 
+            OptionChangedCommand = new ComboBoxCommand((s) =>
             {
                 if (s == null)
                     return;
@@ -171,12 +175,12 @@ namespace barcode_gen.ViewModel
                 Text.Text = SelectedType.ToString();
             }, (q) => { return true; }
             );
-           /* MouseDownCommand = new TicketCommand((UiEventPayload e) =>{ OnMouseDown(e); });
-            MouseUpCommand = new TicketCommand( (UiEventPayload e) => { OnMouseUp(e); });
-            MouseMoveCommand = new TicketCommand((UiEventPayload e) => { OnMouseMove(e); });*/
+            /* MouseDownCommand = new TicketCommand((UiEventPayload e) =>{ OnMouseDown(e); });
+             MouseUpCommand = new TicketCommand( (UiEventPayload e) => { OnMouseUp(e); });
+             MouseMoveCommand = new TicketCommand((UiEventPayload e) => { OnMouseMove(e); });*/
 
         }
-    
+
         #endregion
         #region onProperty
         public event PropertyChangedEventHandler PropertyChanged;

@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+using System.Windows.Controls;
 
 namespace barcode_gen.ViewModel
 {
@@ -16,11 +12,13 @@ namespace barcode_gen.ViewModel
         private double _heightCanvas;
         private double _widthBorder;
         private double _heightBorder;
+        public Canvas _canvas;
+
         #endregion
         #region properties
         public double WidthCanvas
         {
-            get => _widthBorder - 6; set
+            get => _widthCanvas - 6; set
             {
                 _widthCanvas = value;
                 OnPropertyChanged(nameof(WidthCanvas));
@@ -29,7 +27,7 @@ namespace barcode_gen.ViewModel
         }
         public double HeightCanvas
         {
-            get => _heightBorder - 6; set
+            get => _heightCanvas - 6; set
             {
                 _heightCanvas = value;
                 OnPropertyChanged(nameof(HeightCanvas));

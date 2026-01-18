@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace barcode_gen.ViewModel
@@ -14,15 +13,15 @@ namespace barcode_gen.ViewModel
         #region varible
         private string _tbText;
         private string _prefics = "A-";
-        private string _postfics ="-Z";
+        private string _postfics = "-Z";
         private string _from = "10";
         private string _to = "100";
         private string _step = "10";
         private string _mask = "$$$$";
         #endregion
         #region Properties
-        public string TbText 
-        { 
+        public string TbText
+        {
             get => _tbText;
             set
             {
@@ -30,15 +29,15 @@ namespace barcode_gen.ViewModel
                 OnPropertyChanged(nameof(TbText));
             }
         }
-        public string Prefics 
-        { 
+        public string Prefics
+        {
             get => _prefics;
             set
             {
                 _prefics = value;
                 OnPropertyChanged(nameof(Prefics));
             }
-        } 
+        }
         public string Postfics
         {
             get => _postfics;
@@ -124,7 +123,7 @@ namespace barcode_gen.ViewModel
                     TbText = TbText + item + "\r\n";
                 }
             });
-            ClearField = new RelayCommand(() => 
+            ClearField = new RelayCommand(() =>
             {
                 TbText = "";
             });

@@ -5,11 +5,12 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace barcode_gen.ViewModel
 {
@@ -68,11 +69,13 @@ namespace barcode_gen.ViewModel
         public ConfigItem SelectedConfig { get; set; }
 
         public SharedState SharedState { get; }
+        public LeftViewModel LeftVM { get; }
         #endregion
         #region ctor
-        public RightViewModel(SharedState sharedState, Popup popup)
+        public RightViewModel(SharedState sharedState, Popup popup, LeftViewModel vm)
         {
             SharedState = sharedState;
+            LeftVM = vm;
             AddConfigCommand = new RelayCommand(AddConfig);
             AddingConfigCommand = new RelayCommand(AddingConfig);
             CloseConfigDialogCommand = new RelayCommand(CloseConfigDialog);
@@ -86,8 +89,47 @@ namespace barcode_gen.ViewModel
 
         private void DisplaySelectedConfig(ConfigItem selectedConfig)
         {
-            HeightContainer = 100;
-            WidthContainer = 100;
+            
+            LeftVM.SharedState.Blocks.Clear();
+            SharedState._canvas.Children.Clear();
+            HeightContainer = selectedConfig.Blocks[0].MainHeight;
+            WidthContainer = selectedConfig.Blocks[0].MainWidth;
+            
+            foreach (var block in selectedConfig.Blocks)
+            {
+                LeftVM.AddBlock();
+            }
+            for (int i = 0; i < SharedState.Blocks.Count; i++)
+            {
+                var block = selectedConfig.Blocks[i];
+                SharedState.Blocks[i].Border.Width = block.W;
+                SharedState.Blocks[i].Border.Height = block.H;
+                Canvas.SetLeft(SharedState.Blocks[i].Border, block.CX - (block.W / 2));
+                Canvas.SetTop(SharedState.Blocks[i].Border, block.CY - (block.H / 2));
+
+                var fe = (FrameworkElement)SharedState.Blocks[i].Border;
+
+                RotateTransform rt;
+
+                if (fe.RenderTransform is RotateTransform existing)
+                {
+                    rt = existing; // 🔥 ВАЖНО
+                }
+                else
+                {
+                    rt = new RotateTransform(0);
+                    fe.RenderTransform = rt;
+                    fe.RenderTransformOrigin = new Point(0.5, 0.5);
+                }
+                var delta = selectedConfig.Blocks[i].Angel;
+                rt.Angle += delta;
+                SharedState.Blocks[i].H = block.H;
+                SharedState.Blocks[i].W = block.W;
+                SharedState.Blocks[i].CX = block.CX;
+                SharedState.Blocks[i].CY = block.CY;
+                SharedState.Blocks[i].Angel = block.Angel;
+                SharedState.Blocks[i].SelectedType = block.SelectedType;
+            }
         }
         #endregion
         #region command
@@ -113,7 +155,7 @@ namespace barcode_gen.ViewModel
                      Name = ConfigName
                  }
                 );
-            
+
             SaveConfig(Config);
 
 
@@ -122,7 +164,7 @@ namespace barcode_gen.ViewModel
         {
             _popup.IsOpen = false;
         }
-        public  Config LoadConfig()
+        public Config LoadConfig()
         {
             string path = "config.json";
 

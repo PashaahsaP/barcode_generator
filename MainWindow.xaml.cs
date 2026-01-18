@@ -1,31 +1,22 @@
 ﻿using barcode_gen.Enum;
 using barcode_gen.Fonts.Resolvers;
-using DocumentFormat.OpenXml.Drawing.Charts;
 using PdfSharp.Drawing;
 using PdfSharp.Fonts;
 using PdfSharp.Pdf;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using ZXing;
 using ZXing.Common;
 using ZXing.OneD;
 using ZXing.QrCode;
-using static barcode_gen.MainWindow;
-using static barcode_gen.ViewModel.BlockViewModel;
 using Canvas = System.Windows.Controls.Canvas;
 
 namespace barcode_gen
@@ -118,7 +109,7 @@ namespace barcode_gen
             }
         }
     }
-    
+
 
 
     public partial class MainWindow : Window
@@ -132,6 +123,7 @@ namespace barcode_gen
             InitializeComponent();
             GlobalFontSettings.FontResolver = new CustomFontResolver();
             var canvas = FieldCanvas;
+            
             var vm = new MainViewModel(FieldCanvas, ConfigPopup);
             DataContext = vm;
             viewModel = vm;
@@ -147,7 +139,7 @@ namespace barcode_gen
         }
         #endregion
         #region I/O region
-       
+
         public void SaveLabelsToPdf(List<List<RotatedLabelElement>> labels, string path)
         {
             PdfDocument doc = new PdfDocument();
@@ -179,8 +171,14 @@ namespace barcode_gen
                                 var state = gfx.Save();
                                 gfx.TranslateTransform(label.CenterPoint.X, label.CenterPoint.Y);
                                 gfx.RotateTransform(label.Angel);
-                                gfx.TranslateTransform(-label.Width / 3, -label.Height * 1.2);
-                                gfx.DrawImage(xImg, label.X, label.Y, label.Width, label.Height);
+
+                                // рисуем исходя из центра
+                                gfx.DrawImage(
+                                    xImg,
+                                    -label.Width / 2,
+                                    -label.Height / 2,
+                                    label.Width,
+                                    label.Height);
                                 gfx.Restore(state);
                             }
                             else
@@ -235,9 +233,12 @@ namespace barcode_gen
         {
             GetDataFromLeftSideFields();
         }
-       
+
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
         {
+            viewModel.SharedState.WidthCanvas = FieldCanvas.ActualWidth;
+            viewModel.SharedState.HeightCanvas = FieldCanvas.ActualHeight;
+
             (DataContext as MainViewModel)?
                 .ChangeSize();
 
@@ -251,6 +252,8 @@ namespace barcode_gen
         {
             viewModel.PrevWidthCanvas = FieldCanvas.ActualWidth;// Нужен для того чтобы обрабатывать событие изменения основного окна и маштабирования элементов в конструкторе
             viewModel.PrevHeightCanvas = FieldCanvas.ActualHeight;
+            viewModel.SharedState.WidthCanvas = FieldCanvas.ActualWidth;
+            viewModel.SharedState.HeightCanvas = FieldCanvas.ActualHeight;
         }//refac 12.01
         #endregion
         #region helper methods
@@ -300,7 +303,7 @@ namespace barcode_gen
                 }
                 data.Add(CreateLabels(proportionWidth, proportionHeight, queue));
             }
-            
+
             if (data.Count == 0)
                 return;
             SaveLabelsToPdf(data, "lable.pdf");
@@ -311,7 +314,7 @@ namespace barcode_gen
             var labels = new List<RotatedLabelElement>();
             foreach (var block in viewModel.SharedState.Blocks)
             {
-                
+
                 var border = block.Border;
                 var topLeftX = Canvas.GetLeft(border);
                 var topLeftY = Canvas.GetTop(border);
@@ -339,7 +342,7 @@ namespace barcode_gen
                 RotateTransform rt = new RotateTransform(0);
                 if (fe.RenderTransform is RotateTransform existing)
                 {
-                    rt = existing; 
+                    rt = existing;
                 }
 
                 labels.Add(new RotatedLabelElement

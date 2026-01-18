@@ -6,6 +6,6 @@ namespace barcode_gen
     {
         public string Name { get; set; }
         public List<BlockItem> Blocks { get; set; } = new List<BlockItem>();
-        
+
     }
 }

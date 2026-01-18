@@ -1,29 +1,16 @@
-﻿using barcode_gen.Enum;
-using barcode_gen.ViewModel;
-using DocumentFormat.OpenXml.InkML;
-using DocumentFormat.OpenXml.Office2010.CustomUI;
-using System;
+﻿using barcode_gen.ViewModel;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using System.Windows;
-
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Xml.Linq;
 using Canvas = System.Windows.Controls.Canvas;
 
 namespace barcode_gen
 {
- 
+
     #region Helper class
     /// <summary>
     /// Cоотношение высоты и ширины
@@ -73,7 +60,7 @@ namespace barcode_gen
         public Point RightTop { get; set; }
         public Point LeftDown { get; set; }
         public Point RightDown { get; set; }
-        public UIElement FigureElement { get; set; }  
+        public UIElement FigureElement { get; set; }
         public Figure(Point leftTop, Point rightTop, Point leftDown, Point rightDown, UIElement element)
         {
             LeftTop = leftTop;
@@ -115,7 +102,7 @@ namespace barcode_gen
         }
         public void Shift(double dx, double dy)
         {
-            
+
             LeftTop = new Point(LeftTop.X + dx, LeftTop.Y + dy);
             RightTop = new Point(RightTop.X + dx, RightTop.Y + dy);
             LeftDown = new Point(LeftDown.X + dx, LeftDown.Y + dy);
@@ -185,8 +172,8 @@ namespace barcode_gen
         public MainViewModel(Canvas canvas, Popup popup)
         {
             SharedState = new SharedState();
-            RightViewModel = new RightViewModel(SharedState, popup);
             LeftViewModel = new LeftViewModel(SharedState, canvas);
+            RightViewModel = new RightViewModel(SharedState, popup, LeftViewModel);
             CenterViewModel = new CenterViewModel();
         }
         #endregion
@@ -216,13 +203,14 @@ namespace barcode_gen
                 var resultX = newCX - (newBorderWidth / 2);
                 var resultY = newCY - (newBorderHeight / 2);
 
-
-
-
                 border.Width = newBorderWidth;
                 border.Height = newBorderHeight;
                 Canvas.SetLeft(border, resultX);
                 Canvas.SetTop(border, resultY);
+                block.CX = newCX;
+                block.CY = newCY;
+                block.W = newBorderWidth;
+                block.H = newBorderHeight;
             }
 
             PrevWidthCanvas = SharedState.WidthCanvas;

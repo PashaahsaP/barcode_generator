@@ -8,7 +8,7 @@
         xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:local="clr-namespace:barcode_gen"
-        
+        x:Name="MainWindowContainer"
         Width="{Binding DataContext.RightViewModel.WidthContainer, 
                     RelativeSource={RelativeSource Self}, 
                     Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
@@ -402,13 +402,14 @@
                     <ColumnDefinition/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
-                <Button  
+                <Button 
+                    x:Name="AddLeftButton"
                     Command="{Binding LeftViewModel.AddBlockCommand}"
                     Template="{DynamicResource ButtonTemplate1}"
                     Margin="3"> Добавить </Button>
             </Grid>
             <Grid Grid.Row="1">
-                <ItemsControl   ItemsSource="{Binding SharedState.Blocks}">
+                <ItemsControl  x:Name="ComboBoxContainer" ItemsSource="{Binding SharedState.Blocks}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Border CornerRadius="5" 
@@ -428,11 +429,12 @@
                                     </Grid.RowDefinitions>
                                     <!--SelectedItem="{Binding SelectedType, Mode=TwoWay}"-->
                                     <ComboBox 
+                                            x:Name="Combo"
                                             ItemsSource="{Binding Types}"
                                             SelectedIndex="0"
                                             Grid.Column="0"
                                             Grid.Row="0"
-                                            SelectedItem="{Binding SelectedItem}"
+                                            SelectedItem="{Binding SelectedItem , Mode=TwoWay}"
                                             Style="{DynamicResource BaseComboBox}">
                                         <i:Interaction.Triggers>
                                             <i:EventTrigger EventName="SelectionChanged">
@@ -493,7 +495,7 @@
         <Grid Grid.Row="0" Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition/>
-                <RowDefinition/>
+                <RowDefinition Height="172.76"/>
             </Grid.RowDefinitions>
         <Border Padding="5" 
                 Margin="10" 
@@ -635,16 +637,17 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
             
-            <Border Padding="2"
+            <Border 
+                x:Name="FieldBorder"
+                Margin="0 8 8 8"
+                Padding="2"
                 CornerRadius="5"
                 BorderBrush="Black"
                 BorderThickness="1"
-                Width="{Binding SharedState.WidthBorder}"
-                Height="{Binding SharedState.HeightBorder}">
+              >
                 <Canvas x:Name="FieldCanvas"
                     Background="LightGray"
-                    Width="{Binding SharedState.WidthCanvas}"
-                    Height="{Binding SharedState.HeightCanvas}">
+                   >
                 </Canvas>
             </Border>
 
