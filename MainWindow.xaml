@@ -476,7 +476,22 @@
                                             BorderBrush="{StaticResource PrimaryBrush}" 
                                             BorderThickness="1"
                                             Visibility="{Binding Visibility}">
-                                        <TextBox Height="100" BorderThickness="0"  AcceptsReturn="True" Text="{Binding Content, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+                                        <StackPanel
+                                            Orientation="Vertical">
+                                            
+                                            <StackPanel Orientation="Horizontal">
+                                                <ComboBox
+                                                    ItemsSource="{Binding FontTypes}"
+                                                    SelectedItem="{Binding SelectedFontType , Mode=TwoWay}"
+                                                    Margin="0 0 10 0">
+                                                   
+                                                </ComboBox>
+                                                <TextBox
+                                                    Text="{Binding FontSize, UpdateSourceTrigger=PropertyChanged}"
+                                                    Padding="5"></TextBox>
+                                            </StackPanel>
+                                            <TextBox Height="100" BorderThickness="0"  AcceptsReturn="True" Text="{Binding Content, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+                                        </StackPanel>
                                     </Border>
                                 </Grid>
                             </Border>

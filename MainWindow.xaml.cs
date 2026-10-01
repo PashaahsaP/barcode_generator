@@ -154,7 +154,7 @@ namespace barcode_gen
                 foreach (var label in bunchOfLabels)
                 {
 
-                    if (label.Kind != BarcodeFormat.ITF)
+                    if (label.Kind != BarcodeFormat.ITF && label.Kind != BarcodeFormat.RSS_EXPANDED)
                     {
                         Bitmap bmp = BarcodeRenderer.Render(label.Kind, label.Value, 250, 100);
                         bmp.SetResolution(200, 200);
@@ -187,11 +187,22 @@ namespace barcode_gen
                             }
                         }
                     }
+                    else if (label.Kind == BarcodeFormat.RSS_EXPANDED)
+                    {
+                            using (XImage image = XImage.FromFile(label.Path))
+                            {
+                                gfx.DrawImage(image, label.X, label.Y, label.Width, label.Height);
+                        }
+
+                    }
                     else
                     {
                         if (!string.IsNullOrEmpty(label.Value))
                         {
-                            var font = new XFont("Times New Roman", 5);
+                            var style = XFontStyleEx.Regular;
+                            if(label.FontStyle == "Bold")
+                                style = XFontStyleEx.Bold;
+                            var font = new XFont("Times New Roman",int.Parse(label.FontSize), style);
                             var widthOnOneSign = 2.5;//эксперементальный выбор
                             var singsInOneLine = (int)(label.Width / widthOnOneSign);
                             var lines = new List<string>();
@@ -271,6 +282,7 @@ namespace barcode_gen
         {
             switch (type)
             {
+                case ElementTypes.Image: return BarcodeFormat.RSS_EXPANDED;//Временное решение, чтобы дальше можно было понять что это изображение
                 case ElementTypes.Text: return BarcodeFormat.ITF;
                 case ElementTypes.Code128: return BarcodeFormat.CODE_128;
                 case ElementTypes.QrCode: return BarcodeFormat.QR_CODE;
@@ -348,6 +360,9 @@ namespace barcode_gen
                 labels.Add(new RotatedLabelElement
                 {
                     Value = values.Dequeue(),
+                    FontSize = block.FontSize.ToString(),
+                    FontStyle = block.SelectedFontType.ToString(),
+                    Path = block.Path,
                     X = (int)resultX,
                     Y = (int)resultY == 0 ? 1 : (int)resultY,
                     Width = (int)newBorderWidth,

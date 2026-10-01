@@ -10,26 +10,50 @@ namespace barcode_gen.Fonts.Resolvers
         public byte[] GetFont(string faceName)
         {
             var asm = Assembly.GetExecutingAssembly();
+            string resourceName = "";
 
-            // имя ресурса — смотри в свойствах файла!!!
-            const string resourceName = "barcode_gen.Fonts.TIMES.TTF";
+            // Выбираем нужный ресурс по ключу из ResolveTypeface
+            switch (faceName)
+            {
+                // Кейсы для Times New Roman
+                case "times new roman":
+                    resourceName = "barcode_gen.Fonts.TIMES.TTF"; // Обычный
+                    break;
+                case "times new roman_bold":
+                    resourceName = "barcode_gen.Fonts.TIMESBDD.TTF.ttf"; // Жирный (ваш файл)
+                    break;
+
+                default:
+                    // Шрифт по умолчанию, если ничего не подошло
+                    resourceName = "barcode_gen.Fonts.TIMES.TTF";
+                    break;
+            }
 
             using (var stream = asm.GetManifestResourceStream(resourceName))
-            using (var ms = new MemoryStream())
             {
-                stream.CopyTo(ms);
-                return ms.ToArray();
+                if (stream == null)
+                    throw new Exception($"Шрифт не найден в ресурсах: {resourceName}");
+
+                using (var ms = new MemoryStream())
+                {
+                    stream.CopyTo(ms);
+                    return ms.ToArray();
+                }
             }
         }
 
         public FontResolverInfo ResolveTypeface(string familyName, bool isBold, bool isItalic)
         {
-            if (familyName.Equals("Times New Roman", StringComparison.OrdinalIgnoreCase))
-            {
-                return new FontResolverInfo("TNR#Regular");
-            }
+            // Приводим к нижнему регистру для надежности
+            string name = familyName.ToLower();
 
-            return null;
+            // Модифицируем ключ в зависимости от стиля (Жирный/Курсив)
+            if (isBold && isItalic) name += "_bold_italic";
+            else if (isBold) name += "_bold";
+            else if (isItalic) name += "_italic";
+
+            // Возвращаем уникальный идентификатор для PdfSharp
+            return new FontResolverInfo(name);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using barcode_gen.Enum;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -28,8 +29,10 @@ namespace barcode_gen.ViewModel
         #region varibles
 
         private ElementTypes _selectedType = ElementTypes.Text;
+        private FontTypes _selectedFontType = Enum.FontTypes.Normal;
         private Visibility _visibility = Visibility.Collapsed;
         private String _content = string.Empty;
+        private String _fontSize = "6";
         private List<String> _contentData = new List<string>();
         private int _blockLeft = 100;
         private int _blockTop = 100;
@@ -86,6 +89,17 @@ namespace barcode_gen.ViewModel
 
             }
         }
+        public string FontSize
+        {
+            get => _fontSize;
+            set
+            {
+                _fontSize = value;
+                OnPropertyChanged(nameof(this.FontSize));
+
+            }
+        }
+        public string Path { get; set; } = "";
         public string Title { get; set; } = "";
         public double CX { get; set; }
         public double CY { get; set; }
@@ -119,7 +133,20 @@ namespace barcode_gen.ViewModel
                 }
             }
         }
+        public FontTypes SelectedFontType
+        {
+            get => _selectedFontType;
+            set
+            {
+                if (_selectedFontType != value)
+                {
+                    _selectedFontType = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         public ObservableCollection<ElementTypes> Types { get; }
+        public ObservableCollection<FontTypes> FontTypes { get; }
         public List<String> ContentData
         {
             get { return _contentData; }
@@ -150,10 +177,16 @@ namespace barcode_gen.ViewModel
             Title = $"Block {Guid.NewGuid().ToString()}";
             Types = new ObservableCollection<ElementTypes>(
             (ElementTypes[])barcode_gen.Enum.Mode.GetValues(typeof(ElementTypes))
+
         );
+            FontTypes = new ObservableCollection<Enum.FontTypes>(
+          (Enum.FontTypes[])barcode_gen.Enum.Mode.GetValues(typeof(Enum.FontTypes))
+
+      );
 
             // Можно задать начальное значение
             SelectedType = Types.First();
+            SelectedFontType = FontTypes.First();
             Text = text;
             RemoveCommand = new RelayCommand(() =>
             {
@@ -173,7 +206,19 @@ namespace barcode_gen.ViewModel
                     return;
                 SelectedType = (Enum.ElementTypes)s;
                 Text.Text = SelectedType.ToString();
+                if (SelectedType.ToString() == "Image")
+                {
+                    OpenFileDialog openFileDialog = new OpenFileDialog();
+                    if (openFileDialog.ShowDialog() == true)
+                    {
+                        string selectedFilePath = openFileDialog.FileName;
+                        Path = selectedFilePath;
+                    }
+                }
             }, (q) => { return true; }
+            //надо вызвать диалоговое окно чтобы получить путь для файла и сохранения в сущность
+            
+
             );
             /* MouseDownCommand = new TicketCommand((UiEventPayload e) =>{ OnMouseDown(e); });
              MouseUpCommand = new TicketCommand( (UiEventPayload e) => { OnMouseUp(e); });

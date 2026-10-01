@@ -5,6 +5,9 @@ namespace barcode_gen
     public class LabelElement
     {
         public string Value { get; set; }       // данные для штрих-кода
+        public string FontSize { get; set; }     
+        public string FontStyle { get; set; }
+        public string Path { get; set; }
         public int X { get; set; }              // позиция слева на странице (px)
         public int Y { get; set; }              // позиция сверху на странице (px)
         public int Width { get; set; }          // ширина наклейки (px)

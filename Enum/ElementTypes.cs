@@ -5,6 +5,7 @@
         Text,
         Code128,
         QrCode,
-        Matrix
+        Matrix,
+        Image
     }
 }
